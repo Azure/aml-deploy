@@ -1,0 +1,17 @@
+name: "Azure Machine Learning Deploy Action"
+description: "Deploy a registered model in your Azure Machine Learning Workspace with this GitHub Action"
+author: "azure/gh-aml"
+inputs:
+  azureCredentials:
+    description: "Paste output of `az ad sp create-for-rbac --name <your-sp-name> --role contributor --scopes /subscriptions/<your-subscriptionId>/resourceGroups/<your-rg> --sdk-auth` as value of secret variable: AZURE_CREDENTIALS"
+    required: true
+  parametersFile:
+    description: "JSON file including the parameters for deployment."
+    required: true
+    default: "deploy.json"
+branding:
+  icon: "chevron-up"
+  color: "blue"
+runs:
+  using: "docker"
+  image: "Dockerfile"

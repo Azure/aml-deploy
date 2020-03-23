@@ -1,0 +1,13 @@
+name: Integration Test
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repository
+        id: checkout_repository
+        uses: actions/checkout@master
+      
+      - name: Self test
+        id: selftest
+        uses: azure/aml-deploy@master

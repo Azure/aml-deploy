@@ -1,0 +1,23 @@
+name: Lint
+on: [push, pull_request]
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python 3.7
+        id: python_setup
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.7"
+
+      - name: Check Out Repository
+        id: checkout_repository
+        uses: actions/checkout@v1
+
+      - name: Lint
+        id: python_linting
+        run: |
+          pip install flake8
+          flake8 --ignore E501 code/main.py
+          flake8 --ignore E501 code/utils.py
