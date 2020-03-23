@@ -5,12 +5,12 @@ from azureml.core import Workspace, Model, ContainerRegistry
 from azureml.core.compute import ComputeTarget, AksCompute
 from azureml.core.model import InferenceConfig
 from azureml.core.webservice import AksWebservice, AciWebservice
-from azureml.exceptions import ComputeTargetException, AuthenticationException, ProjectSystemException
+from azureml.exceptions import ComputeTargetException, AuthenticationException, ProjectSystemException, WebserviceException
 from azureml.core.authentication import ServicePrincipalAuthentication
 from adal.adal_error import AdalError
 from msrest.exceptions import AuthenticationError
 from json import JSONDecodeError
-from utils import AMLConfigurationException, required_parameters_provided
+from utils import AMLConfigurationException, required_parameters_provided, get_resource_config
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
     parameters_file = os.environ.get("INPUT_PARAMETERSFILE", default="compute.json")
     azure_credentials = os.environ.get("INPUT_AZURECREDENTIALS", default="{}")
     model_name = os.environ.get("INPUT_MODELNAME", default=None)
-    model_version = os.environ.get("INPUT_MODELVERSION", default=None)
+    model_version = int(os.environ.get("INPUT_MODELVERSION", default=None))
     try:
         azure_credentials = json.loads(azure_credentials)
     except JSONDecodeError:
@@ -82,13 +82,25 @@ def main():
     except ComputeTargetException:
         deployment_target = None
     
+    # Loading model
+    print("::debug::Loading model")
+    try:
+        model = Model(
+            workspace=ws,
+            name=model_name,
+            version=model_version
+        )
+    except WebserviceException as exception:
+        print(f"::error::Could not load model with provided details: {exception}")
+        raise AMLConfigurationException(f"Could not load model with provided details: {exception}")
+    
     # Creating inference config
     print("::debug::Creating inference config")
     if parameters.get("custom_container_registry_address", None) is not None:
         container_registry = ContainerRegistry()
-        container_registry.address = parameters.get("custom_container_registry_address", None)
-        container_registry.username = os.environ.get("custom_container_registry_username", None)
-        container_registry.password = os.environ.get("custom_container_registry_password", None)
+        container_registry.address = os.environ.get("CONTAINERREGISTRYADRESS", None)
+        container_registry.username = os.environ.get("CONTAINERREGISTRYUSERNAME", None)
+        container_registry.password = os.environ.get("CONTAINERREGISTRYPASSWORD", None)
     else:
         container_registry = None
 
@@ -105,6 +117,26 @@ def main():
         cuda_version=parameters.get("cuda_version", None)
     )
 
+    # Loading run config
+    print("::debug::Loading run config")
+    model_resource_config = model.resource_configuration
+    cpu_cores = get_resource_config(
+        config=parameters.get("cpu_cores", None),
+        resource_config=model_resource_config,
+        config_name="cpu"
+    )
+    memory_gb = get_resource_config(
+        config=parameters.get("memory_gb", None),
+        resource_config=model_resource_config,
+        config_name="memory_in_gb"
+    )
+    gpu_cores = get_resource_config(
+        config=parameters.get("gpu_cores", None),
+        resource_config=model_resource_config,
+        config_name="gpu"
+    )
+
+
     # Creating deployment config
     print("::debug::Creating deployment config")
     if type(deployment_target) is AksCompute:
@@ -114,21 +146,21 @@ def main():
             autoscale_max_replicas="",
             autoscale_refresh_seconds="",
             autoscale_target_utilization="",
-            collect_model_data="",
-            auth_enabled="",
-            cpu_cores="",
-            memory_gb="",
-            enable_app_insights="",
+            collect_model_data=parameters.get("model_data_collection_enabled", None),
+            auth_enabled=parameters.get("authentication_enabled", None),
+            cpu_cores=cpu_cores,
+            memory_gb=memory_gb,
+            enable_app_insights=parameters.get("app_insights_enabled", None),
             scoring_timeout_ms="",
             replica_max_concurrent_requests="",
             max_request_wait_time="",
             num_replicas="",
-            primary_key="",
-            secondary_key="",
+            primary_key=os.environ.get("PRIMARYKEY", None),
+            secondary_key=os.environ.get("SECONDARYKEY", None),
             tags=parameters.get("tags", None),
             properties=parameters.get("properties", None),
             description=parameters.get("description", None),
-            gpu_cores="",
+            gpu_cores=gpu_cores,
             period_seconds="",
             initial_delay_seconds="",
             timeout_seconds="",
@@ -136,29 +168,28 @@ def main():
             failure_threshold="",
             namespace="",
             token_auth_enabled=""
-         )
-
+        )
     else:
         deployment_config = AciWebservice.deploy_configuration(
-            cpu_cores="",
-            memory_gb="",
+            cpu_cores=cpu_cores,
+            memory_gb=memory_gb,
             tags=parameters.get("tags", None),
             properties=parameters.get("properties", None),
             description=parameters.get("description", None),
-            location="",
-            auth_enabled="",
-            ssl_enabled="",
-            enable_app_insights="",
-            ssl_cert_pem_file="",
-            ssl_key_pem_file="",
-            ssl_cname="",
-            dns_name_label="",
-            primary_key="",
-            secondary_key="",
-            collect_model_data="",
-            cmk_vault_base_url="",
-            cmk_key_name="",
-            cmk_key_version=""
+            location=parameters.get("location", None),
+            auth_enabled=parameters.get("authentication_enabled", None),
+            ssl_enabled=parameters.get("ssl_enabled", None),
+            enable_app_insights=parameters.get("app_insights_enabled", None),
+            ssl_cert_pem_file=parameters.get("ssl_cert_pem_file", None),
+            ssl_key_pem_file=parameters.get("ssl_key_pem_file", None),
+            ssl_cname=parameters.get("ssl_cname", None),
+            dns_name_label=parameters.get("dns_name_label", None),
+            primary_key=os.environ.get("PRIMARYKEY", None),
+            secondary_key=os.environ.get("SECONDARYKEY", None),
+            collect_model_data=parameters.get("model_data_collection_enabled", None),
+            cmk_vault_base_url=parameters.get("cmk_vault_base_url", None),
+            cmk_key_name=parameters.get("cmk_key_name", None),
+            cmk_key_version=parameters.get("cmk_key_version", None)
         )
 
     try:
