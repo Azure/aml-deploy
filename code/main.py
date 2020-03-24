@@ -261,9 +261,8 @@ def main():
     else:
         # Create outputs
         print("::debug::Creating outputs")
-        print(f"::set-output name=model_name::{service.}")
-        print(f"::set-output name=model_version::{model.version}")
-        print(f"::set-output name=model_id::{model.id}")
+        print(f"::set-output name=service_scoring_uri::{service.scoring_uri}")
+        print(f"::set-output name=service_swagger_uri::{service.swagger_uri}")
     print("::debug::Successfully finished Azure Machine Learning Deploy Action")
 
 
