@@ -2,6 +2,10 @@ class AMLConfigurationException(Exception):
     pass
 
 
+class AMLDeploymentException(Exception):
+    pass
+
+
 def required_parameters_provided(parameters, keys, message="Required parameter(s) not found in your parameters file. Please provide a value for the following key(s): "):
     missing_keys = []
     for key in keys:

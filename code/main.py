@@ -10,7 +10,7 @@ from azureml.core.authentication import ServicePrincipalAuthentication
 from adal.adal_error import AdalError
 from msrest.exceptions import AuthenticationError
 from json import JSONDecodeError
-from utils import AMLConfigurationException, required_parameters_provided, get_resource_config
+from utils import AMLConfigurationException, AMLDeploymentException, required_parameters_provided, get_resource_config
 
 
 def main():
@@ -77,7 +77,7 @@ def main():
     try:
         deployment_target = ComputeTarget(
             workspace=ws,
-            name=parameters.get("deployment_target", "")
+            name=parameters.get("deployment_compute_target", "")
         )
     except ComputeTargetException:
         deployment_target = None
@@ -141,33 +141,33 @@ def main():
     print("::debug::Creating deployment config")
     if type(deployment_target) is AksCompute:
         deployment_config = AksWebservice.deploy_configuration(
-            autoscale_enabled="",
-            autoscale_min_replicas="",
-            autoscale_max_replicas="",
-            autoscale_refresh_seconds="",
-            autoscale_target_utilization="",
+            autoscale_enabled=parameters.get("autoscale_enabled", None),
+            autoscale_min_replicas=parameters.get("autoscale_min_replicas", None),
+            autoscale_max_replicas=parameters.get("autoscale_max_replicas", None),
+            autoscale_refresh_seconds=parameters.get("autoscale_refresh_seconds", None),
+            autoscale_target_utilization=parameters.get("autoscale_target_utilization", None),
             collect_model_data=parameters.get("model_data_collection_enabled", None),
             auth_enabled=parameters.get("authentication_enabled", None),
             cpu_cores=cpu_cores,
             memory_gb=memory_gb,
             enable_app_insights=parameters.get("app_insights_enabled", None),
-            scoring_timeout_ms="",
-            replica_max_concurrent_requests="",
-            max_request_wait_time="",
-            num_replicas="",
+            scoring_timeout_ms=parameters.get("scoring_timeout_ms", None),
+            replica_max_concurrent_requests=parameters.get("replica_max_concurrent_requests", None),
+            max_request_wait_time=parameters.get("max_request_wait_time", None),
+            num_replicas=parameters.get("num_replicas", None),
             primary_key=os.environ.get("PRIMARYKEY", None),
             secondary_key=os.environ.get("SECONDARYKEY", None),
             tags=parameters.get("tags", None),
             properties=parameters.get("properties", None),
             description=parameters.get("description", None),
             gpu_cores=gpu_cores,
-            period_seconds="",
-            initial_delay_seconds="",
-            timeout_seconds="",
-            success_threshold="",
-            failure_threshold="",
-            namespace="",
-            token_auth_enabled=""
+            period_seconds=parameters.get("period_seconds", None),
+            initial_delay_seconds=parameters.get("initial_delay_seconds", None),
+            timeout_seconds=parameters.get("timeout_seconds", None),
+            success_threshold=parameters.get("success_threshold", None),
+            failure_threshold=parameters.get("failure_threshold", None),
+            namespace=parameters.get("namespace", None),
+            token_auth_enabled=parameters.get("token_auth_enabled", None)
         )
     else:
         deployment_config = AciWebservice.deploy_configuration(
@@ -192,6 +192,8 @@ def main():
             cmk_key_version=parameters.get("cmk_key_version", None)
         )
 
+    # Deploying model
+    print("::debug::Deploying model")
     try:
         service = Model.deploy(
             workspace=ws,
@@ -202,8 +204,25 @@ def main():
             deployment_target=deployment_target,
             overwrite=True
         )
-    except expression as identifier:
-        pass
+    except WebserviceException as exception:
+        print(f"::error::Model deployment failed: {exception}")
+        raise AMLDeploymentException(f"Model deployment failed: {exception}")
+    service.wait_for_deployment(show_output=True)
+
+    # Checking status of service
+    print("::debug::Checking status of service")
+    if service.state != "Healthy":
+        print(f"::error::Model deployment failed with state '{service.state}': {service.get_logs()}")
+        raise AMLDeploymentException(f"Model deployment failed with state '{service.state}': {service.get_logs()}")
+
+    # Testing service
+    print("::debug::Testing service")
+    # TODO: add model testing
+
+    # Deleting service if desired
+    if parameters.get("delete_service_after_test", False):
+        service.delete()
+
     print("::debug::Successfully finished Azure Machine Learning Deploy Action")
 
 
