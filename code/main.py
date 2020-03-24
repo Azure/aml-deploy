@@ -110,7 +110,7 @@ def main():
 
     inference_config = InferenceConfig(
         entry_script=parameters.get("inference_entry_script", None),
-        runtime=parameters.get("runtime", None),
+        runtime=parameters.get("runtime", "python"),
         conda_file=parameters.get("conda_file", None),
         extra_docker_file_steps=parameters.get("extra_docker_file_steps", None),
         source_directory=parameters.get("inference_source_directory", None),
