@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+import importlib
 
 from azureml.core import Workspace, Model, ContainerRegistry
 from azureml.core.compute import ComputeTarget, AksCompute
@@ -83,7 +85,7 @@ def main():
         deployment_target = None
     except TypeError:
         deployment_target = None
-    
+
     # Loading model
     print("::debug::Loading model")
     try:
@@ -95,7 +97,7 @@ def main():
     except WebserviceException as exception:
         print(f"::error::Could not load model with provided details: {exception}")
         raise AMLConfigurationException(f"Could not load model with provided details: {exception}")
-    
+
     # Creating inference config
     print("::debug::Creating inference config")
     if parameters.get("custom_container_registry_address", None) is not None:
@@ -137,7 +139,6 @@ def main():
         resource_config=model_resource_config,
         config_name="gpu"
     )
-
 
     # Creating deployment config
     print("::debug::Creating deployment config")
