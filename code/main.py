@@ -201,7 +201,7 @@ def main():
         service = Model.deploy(
             workspace=ws,
             name=parameters.get("name", None),
-            models=[],
+            models=[model],
             inference_config=inference_config,
             deployment_config=deployment_config,
             deployment_target=deployment_target,
