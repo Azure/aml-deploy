@@ -207,10 +207,10 @@ def main():
             deployment_target=deployment_target,
             overwrite=True
         )
+        service.wait_for_deployment(show_output=True)
     except WebserviceException as exception:
         print(f"::error::Model deployment failed: {exception}")
         raise AMLDeploymentException(f"Model deployment failed: {exception}")
-    service.wait_for_deployment(show_output=True)
 
     # Checking status of service
     print("::debug::Checking status of service")
@@ -258,7 +258,12 @@ def main():
     # Deleting service if desired
     if parameters.get("delete_service_after_test", False):
         service.delete()
-
+    else:
+        # Create outputs
+        print("::debug::Creating outputs")
+        print(f"::set-output name=model_name::{service.}")
+        print(f"::set-output name=model_version::{model.version}")
+        print(f"::set-output name=model_id::{model.id}")
     print("::debug::Successfully finished Azure Machine Learning Deploy Action")
 
 
