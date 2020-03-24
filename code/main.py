@@ -224,8 +224,9 @@ def main():
         )
         service.wait_for_deployment(show_output=True)
     except WebserviceException as exception:
-        print(f"::error::Model deployment failed: {exception}")
-        raise AMLDeploymentException(f"Model deployment failed: {exception}")
+        service_logs = service.get_logs()
+        print(f"::error::Model deployment failed with logs: {service_logs} \nexception: {exception}")
+        raise AMLDeploymentException(f"Model deployment failedlogs: {service_logs} \nexception: {exception}")
 
     # Checking status of service
     print("::debug::Checking status of service")
