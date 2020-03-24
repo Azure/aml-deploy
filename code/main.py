@@ -74,6 +74,14 @@ def main():
         print(f"::error::Workspace authorizationfailed: {exception}")
         raise ProjectSystemException
 
+    # Checking provided parameters
+    print("::debug::Checking provided parameters")
+    required_parameters_provided(
+        parameters=parameters,
+        keys=["name"],
+        message="Required parameter(s) not found in your parameters file for creating a web service. Please provide a value for the following key(s): "
+    )
+
     # Loading deployment target
     print("::debug::Loading deployment target")
     try:
@@ -108,18 +116,25 @@ def main():
     else:
         container_registry = None
 
-    inference_config = InferenceConfig(
-        entry_script=parameters.get("inference_entry_script", None),
-        runtime=parameters.get("runtime", "python"),
-        conda_file=parameters.get("conda_file", None),
-        extra_docker_file_steps=parameters.get("extra_docker_file_steps", None),
-        source_directory=parameters.get("inference_source_directory", None),
-        enable_gpu=parameters.get("enable_gpu", None),
-        description=parameters.get("description", None),
-        base_image=parameters.get("base_image", None),
-        base_image_registry=container_registry,
-        cuda_version=parameters.get("cuda_version", None)
-    )
+    try:
+        inference_config = InferenceConfig(
+            entry_script=parameters.get("inference_entry_script", None),
+            runtime=parameters.get("runtime", "python"),
+            conda_file=parameters.get("conda_file", None),
+            extra_docker_file_steps=parameters.get("extra_docker_file_steps", None),
+            source_directory=parameters.get("inference_source_directory", None),
+            enable_gpu=parameters.get("enable_gpu", None),
+            description=parameters.get("description", None),
+            base_image=parameters.get("base_image", None),
+            base_image_registry=container_registry,
+            cuda_version=parameters.get("cuda_version", None)
+        )
+    except WebserviceException as exception:
+        print("::debug::Failed to create InferenceConfig. Trying to create no code deployment.")
+        inference_config = None
+    except TypeError as exception:
+        print("::debug::Failed to create InferenceConfig. Trying to create no code deployment.")
+        inference_config = None
 
     # Loading run config
     print("::debug::Loading run config")
