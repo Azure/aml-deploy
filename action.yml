@@ -5,6 +5,12 @@ inputs:
   azureCredentials:
     description: "Paste output of `az ad sp create-for-rbac --name <your-sp-name> --role contributor --scopes /subscriptions/<your-subscriptionId>/resourceGroups/<your-rg> --sdk-auth` as value of secret variable: AZURE_CREDENTIALS"
     required: true
+  modelName:
+    description: "Name of the model that will be deployed"
+    required: true
+  modelVersion:
+    description: "Version of the model that will be deployed"
+    required: true
   parametersFile:
     description: "JSON file including the parameters for deployment."
     required: true

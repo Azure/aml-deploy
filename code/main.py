@@ -81,6 +81,8 @@ def main():
         )
     except ComputeTargetException:
         deployment_target = None
+    except TypeError:
+        deployment_target = None
     
     # Loading model
     print("::debug::Loading model")
@@ -215,41 +217,42 @@ def main():
         print(f"::error::Model deployment failed with state '{service.state}': {service.get_logs()}")
         raise AMLDeploymentException(f"Model deployment failed with state '{service.state}': {service.get_logs()}")
 
-    # Testing service
-    print("::debug::Testing service")
-    root = os.environ.get("GITHUB_WORKSPACE", default=None)
-    source_directory = parameters.get("test_source_directory", "src/test")
-    script_name = parameters.get("test_script_name", "test")
-    function_name = parameters.get("test_function_name", "main")
+    if parameters.get("test_enabled", False):
+        # Testing service
+        print("::debug::Testing service")
+        root = os.environ.get("GITHUB_WORKSPACE", default=None)
+        source_directory = parameters.get("test_source_directory", "src/test")
+        script_name = parameters.get("test_script_name", "test")
+        function_name = parameters.get("test_function_name", "main")
 
-    print("::debug::Adding root to system path")
-    sys.path.insert(1, f"{root}")
+        print("::debug::Adding root to system path")
+        sys.path.insert(1, f"{root}")
 
-    print("::debug::Importing module")
-    module_root_path = source_directory.replace("/", ".")
-    module_path = f"{module_root_path}.{script_name}".replace("..", ".")
-    try:
-        test_module = importlib.import_module(
-            name=module_path
-        )
-        test_function = getattr(test_module, function_name, None)
-    except ModuleNotFoundError as exception:
-        print(f"::error::Could not load python script in your repository which defines theweb service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
-        raise AMLConfigurationException(f"Could not load python script in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
-    except NameError as exception:
-        print(f"::error::Could not load python script or function in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
-        raise AMLConfigurationException(f"Could not load python script or function in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
-    except ValueError as exception:
-        print(f"::error::Could not load python script or function in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
-        raise AMLConfigurationException(f"Could not load python script or function in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
+        print("::debug::Importing module")
+        module_root_path = source_directory.replace("/", ".")
+        module_path = f"{module_root_path}.{script_name}".replace("..", ".")
+        try:
+            test_module = importlib.import_module(
+                name=module_path
+            )
+            test_function = getattr(test_module, function_name, None)
+        except ModuleNotFoundError as exception:
+            print(f"::error::Could not load python script in your repository which defines theweb service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
+            raise AMLConfigurationException(f"Could not load python script in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
+        except NameError as exception:
+            print(f"::error::Could not load python script or function in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
+            raise AMLConfigurationException(f"Could not load python script or function in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
+        except ValueError as exception:
+            print(f"::error::Could not load python script or function in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
+            raise AMLConfigurationException(f"Could not load python script or function in your repository which defines the web service tests (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
 
-    # Load experiment config
-    print("::debug::Loading experiment config")
-    try:
-        test_function(service)
-    except TypeError as exception:
-        print(f"::error::Could not load experiment config from your module (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
-        raise AMLConfigurationException(f"Could not load experiment config from your module (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
+        # Load experiment config
+        print("::debug::Loading experiment config")
+        try:
+            test_function(service)
+        except TypeError as exception:
+            print(f"::error::Could not load experiment config from your module (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
+            raise AMLConfigurationException(f"Could not load experiment config from your module (Script: /{source_directory}/{script_name}, Function: {function_name}()): {exception}")
 
     # Deleting service if desired
     if parameters.get("delete_service_after_test", False):
