@@ -2,23 +2,23 @@ name: "Azure Machine Learning Deploy Action"
 description: "Deploy a registered model in your Azure Machine Learning Workspace with this GitHub Action"
 author: "azure/gh-aml"
 inputs:
-  azureCredentials:
+  azure_credentials:
     description: "Paste output of `az ad sp create-for-rbac --name <your-sp-name> --role contributor --scopes /subscriptions/<your-subscriptionId>/resourceGroups/<your-rg> --sdk-auth` as value of secret variable: AZURE_CREDENTIALS"
     required: true
-  modelName:
+  model_name:
     description: "Name of the model that will be deployed"
     required: true
-  modelVersion:
+  model_version:
     description: "Version of the model that will be deployed"
     required: true
-  parametersFile:
+  parameters_file:
     description: "JSON file including the parameters for deployment."
     required: true
     default: "deploy.json"
 outputs:
-  serviceScoringUri:
+  service_scoring_uri:
     description: "Scoring URI of the webservice that was created (only provided if delete_service_after_test is set to False)"
-  serviceSwaggerUri:
+  service_swagger_uri:
     description: "Swagger Uri of the webservice that was created (only provided if delete_service_after_test is set to False)"
 branding:
   icon: "chevron-up"

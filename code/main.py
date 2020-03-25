@@ -18,10 +18,10 @@ from utils import AMLConfigurationException, AMLDeploymentException, required_pa
 def main():
     # Loading input values
     print("::debug::Loading input values")
-    parameters_file = os.environ.get("INPUT_PARAMETERSFILE", default="compute.json")
-    azure_credentials = os.environ.get("INPUT_AZURECREDENTIALS", default="{}")
-    model_name = os.environ.get("INPUT_MODELNAME", default=None)
-    model_version = int(os.environ.get("INPUT_MODELVERSION", default=None))
+    parameters_file = os.environ.get("INPUT_PARAMETERS_FILE", default="compute.json")
+    azure_credentials = os.environ.get("INPUT_AZURE_CREDENTIALS", default="{}")
+    model_name = os.environ.get("INPUT_MODEL_NAME", default=None)
+    model_version = int(os.environ.get("INPUT_MODEL_VERSION", default=None))
     try:
         azure_credentials = json.loads(azure_credentials)
     except JSONDecodeError:
@@ -277,8 +277,8 @@ def main():
     else:
         # Create outputs
         print("::debug::Creating outputs")
-        print(f"::set-output name=serviceScoringUri::{service.scoring_uri}")
-        print(f"::set-output name=serviceSwaggerUri::{service.swagger_uri}")
+        print(f"::set-output name=service_scoring_uri::{service.scoring_uri}")
+        print(f"::set-output name=service_swagger_uri::{service.swagger_uri}")
     print("::debug::Successfully finished Azure Machine Learning Deploy Action")
 
 
