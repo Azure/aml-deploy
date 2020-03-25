@@ -130,10 +130,10 @@ def main():
             cuda_version=parameters.get("cuda_version", None)
         )
     except WebserviceException as exception:
-        print("::debug::Failed to create InferenceConfig. Trying to create no code deployment.")
+        print(f"::debug::Failed to create InferenceConfig. Trying to create no code deployment: {exception}")
         inference_config = None
     except TypeError as exception:
-        print("::debug::Failed to create InferenceConfig. Trying to create no code deployment.")
+        print(f"::debug::Failed to create InferenceConfig. Trying to create no code deployment: {exception}")
         inference_config = None
 
     # Loading run config
