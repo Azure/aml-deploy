@@ -15,6 +15,11 @@ inputs:
     description: "JSON file including the parameters for deployment."
     required: true
     default: "deploy.json"
+outputs:
+  serviceScoringUri:
+    description: "Scoring URI of the webservice that was created (only provided if delete_service_after_test is set to False)"
+  serviceSwaggerUri:
+    description: "Swagger Uri of the webservice that was created (only provided if delete_service_after_test is set to False)"
 branding:
   icon: "chevron-up"
   color: "blue"
