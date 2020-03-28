@@ -118,11 +118,11 @@ def main():
 
     try:
         inference_config = InferenceConfig(
-            entry_script=parameters.get("inference_entry_script", None),
+            entry_script=parameters.get("inference_entry_script", "score.py"),
             runtime=parameters.get("runtime", "python"),
-            conda_file=parameters.get("conda_file", None),
+            conda_file=parameters.get("conda_file", "environment.yml"),
             extra_docker_file_steps=parameters.get("extra_docker_file_steps", None),
-            source_directory=parameters.get("inference_source_directory", None),
+            source_directory=parameters.get("inference_source_directory", "src/deploy/"),
             enable_gpu=parameters.get("enable_gpu", None),
             description=parameters.get("description", None),
             base_image=parameters.get("base_image", None),
