@@ -74,14 +74,6 @@ def main():
         print(f"::error::Workspace authorizationfailed: {exception}")
         raise ProjectSystemException
 
-    # Checking provided parameters
-    print("::debug::Checking provided parameters")
-    required_parameters_provided(
-        parameters=parameters,
-        keys=["name"],
-        message="Required parameter(s) not found in your parameters file for creating a web service. Please provide a value for the following key(s): "
-    )
-
     # Loading deployment target
     print("::debug::Loading deployment target")
     try:
@@ -213,9 +205,14 @@ def main():
     # Deploying model
     print("::debug::Deploying model")
     try:
+        # Default service name
+        repository_name = os.environ.get("GITHUB_REPOSITORY").split("/")[-1]
+        branch_name = os.environ.get("GITHUB_REF")
+        default_service_name = f"{repository_name}_{branch_name}"
+
         service = Model.deploy(
             workspace=ws,
-            name=parameters.get("name", None),
+            name=parameters.get("name", default_service_name),
             models=[model],
             inference_config=inference_config,
             deployment_config=deployment_config,
