@@ -12,7 +12,7 @@ inputs:
     description: "Version of the model that will be deployed"
     required: true
   parameters_file:
-    description: "JSON file including the parameters for deployment."
+    description: "JSON file including the parameters for deployment. This looks in the .ml/.azure/ directory"
     required: true
     default: "deploy.json"
 outputs:
