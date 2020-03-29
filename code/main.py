@@ -21,12 +21,23 @@ def main():
     parameters_file = os.environ.get("INPUT_PARAMETERS_FILE", default="compute.json")
     azure_credentials = os.environ.get("INPUT_AZURE_CREDENTIALS", default="{}")
     model_name = os.environ.get("INPUT_MODEL_NAME", default=None)
-    model_version = int(os.environ.get("INPUT_MODEL_VERSION", default=None))
+    model_version = os.environ.get("INPUT_MODEL_VERSION", default=None)
+
+    # Casting input values
+    print("::debug::Casting input values")
     try:
         azure_credentials = json.loads(azure_credentials)
     except JSONDecodeError:
         print("::error::Please paste output of `az ad sp create-for-rbac --name <your-sp-name> --role contributor --scopes /subscriptions/<your-subscriptionId>/resourceGroups/<your-rg> --sdk-auth` as value of secret variable: AZURE_CREDENTIALS")
         raise AMLConfigurationException(f"Incorrect or poorly formed output from azure credentials saved in AZURE_CREDENTIALS secret. See setup in https://github.com/Azure/aml-compute/blob/master/README.md")
+    try:
+        model_version = int(model_version)
+    except TypeError as exception:
+        print(f"::debug::Could not cast model version to int: {exception}")
+        model_version = None
+    except ValueError as exception:
+        print(f"::debug::Could not cast model version to int: {exception}")
+        model_version = None
 
     # Checking provided parameters
     print("::debug::Checking provided parameters")
