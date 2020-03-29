@@ -56,7 +56,7 @@ def main():
     except FileNotFoundError:
         print(f"::debug::Could not find parameter file in {parameters_file_path}. Please provide a parameter file in your repository  if you do not want to use default settings (e.g. .ml/.azure/workspace.json).")
         parameters = {}
-    
+
     # Loading Workspace
     print("::debug::Loading AML Workspace")
     sp_auth = ServicePrincipalAuthentication(
