@@ -12,7 +12,7 @@ from azureml.core.authentication import ServicePrincipalAuthentication
 from adal.adal_error import AdalError
 from msrest.exceptions import AuthenticationError
 from json import JSONDecodeError
-from utils import AMLConfigurationException, AMLDeploymentException, required_parameters_provided, get_resource_config
+from utils import AMLConfigurationException, AMLDeploymentException, required_parameters_provided, get_resource_config, mask_parameter
 
 
 def main():
@@ -47,14 +47,21 @@ def main():
         message="Required parameter(s) not found in your azure credentials saved in AZURE_CREDENTIALS secret for logging in to the workspace. Please provide a value for the following key(s): "
     )
 
+    # Mask values
+    print("::debug::Masking parameters")
+    mask_parameter(parameter=azure_credentials.get("tenantId", ""))
+    mask_parameter(parameter=azure_credentials.get("clientId", ""))
+    mask_parameter(parameter=azure_credentials.get("clientSecret", ""))
+    mask_parameter(parameter=azure_credentials.get("subscriptionId", ""))
+
     # Loading parameters file
     print("::debug::Loading parameters file")
-    parameters_file_path = os.path.join(".ml", ".azure", parameters_file)
+    parameters_file_path = os.path.join(".cloud", ".azure", parameters_file)
     try:
         with open(parameters_file_path) as f:
             parameters = json.load(f)
     except FileNotFoundError:
-        print(f"::debug::Could not find parameter file in {parameters_file_path}. Please provide a parameter file in your repository  if you do not want to use default settings (e.g. .ml/.azure/workspace.json).")
+        print(f"::debug::Could not find parameter file in {parameters_file_path}. Please provide a parameter file in your repository  if you do not want to use default settings (e.g. .cloud/.azure/workspace.json).")
         parameters = {}
 
     # Loading Workspace
@@ -64,7 +71,7 @@ def main():
         service_principal_id=azure_credentials.get("clientId", ""),
         service_principal_password=azure_credentials.get("clientSecret", "")
     )
-    config_file_path = os.environ.get("GITHUB_WORKSPACE", default=".ml/.azure")
+    config_file_path = os.environ.get("GITHUB_WORKSPACE", default=".cloud/.azure")
     config_file_name = "aml_arm_config.json"
     try:
         ws = Workspace.from_config(
@@ -125,7 +132,7 @@ def main():
             runtime=parameters.get("runtime", "python"),
             conda_file=parameters.get("conda_file", "environment.yml"),
             extra_docker_file_steps=parameters.get("extra_docker_file_steps", None),
-            source_directory=parameters.get("inference_source_directory", "src/deploy/"),
+            source_directory=parameters.get("inference_source_directory", "code/deploy/"),
             enable_gpu=parameters.get("enable_gpu", None),
             description=parameters.get("description", None),
             base_image=parameters.get("base_image", None),
@@ -246,7 +253,7 @@ def main():
         # Testing service
         print("::debug::Testing service")
         root = os.environ.get("GITHUB_WORKSPACE", default=None)
-        source_directory = parameters.get("test_source_directory", "src/test")
+        source_directory = parameters.get("test_source_directory", "code/test")
         script_name = parameters.get("test_script_name", "test")
         function_name = parameters.get("test_function_name", "main")
 

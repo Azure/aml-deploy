@@ -23,3 +23,7 @@ def get_resource_config(config, resource_config, config_name):
     elif resource_config is not None:
         return resource_config.serialize().get(config_name, None)
     return None
+
+
+def mask_parameter(parameter):
+    print(f"::add-mask::{parameter}")
