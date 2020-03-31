@@ -132,7 +132,7 @@ def main():
             runtime=parameters.get("runtime", "python"),
             conda_file=parameters.get("conda_file", "environment.yml"),
             extra_docker_file_steps=parameters.get("extra_docker_file_steps", None),
-            source_directory=parameters.get("inference_source_directory", "code/deploy/"),
+            source_directory=parameters.get("inference_source_directory", "src/deploy/"),
             enable_gpu=parameters.get("enable_gpu", None),
             description=parameters.get("description", None),
             base_image=parameters.get("base_image", None),
@@ -253,7 +253,7 @@ def main():
         # Testing service
         print("::debug::Testing service")
         root = os.environ.get("GITHUB_WORKSPACE", default=None)
-        source_directory = parameters.get("test_source_directory", "code/test")
+        source_directory = parameters.get("test_source_directory", "src/test")
         script_name = parameters.get("test_script_name", "test")
         function_name = parameters.get("test_function_name", "main")
 
