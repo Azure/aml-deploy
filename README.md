@@ -145,62 +145,62 @@ A sample file can be found in this repository in the folder `.ml/.azure`. There 
 | deployment_compute_target | x        | str            |            | | 
 | inference_source_directory |          | str            |  |
 | inference_entry_script |          | str | |  | 
-| test_enabled            |          | str      |      |  |
-| test_source_directory   |          | dict  | |  |
-| test_script_name        |          | dict  | | |
+| test_enabled            |          | bool      |      |  |
+| test_source_directory   |          | str  | |  |
+| test_script_name        |          | str  | | |
 | test_function_name      |          | str   | | |
-| conda_file                |          | list  | |  |
+| conda_file                |          | bool  | |  |
 | extra_docker_file_steps |          | str   | |  |
 | enable_gpu              |          | str   | |  |
-| cuda_version            |          | float | |  |
-| model_data_collection_enabled |          | float | |  |
-| authentication_enabled  |          | str   | |  |
-| app_insights_enabled    |          | list  | |  |
-| runtime                 |          | list  | |  |
-| custom_base_image       |          | bool  | |  |
-| cpu_cores               |          | bool  | |  |
-| memory_gb               |          | bool  | |  |
+| cuda_version            |          | str | |  |
+| model_data_collection_enabled |          | bool | |  |
+| authentication_enabled  |          | bool   | |  |
+| app_insights_enabled    |          | bool  | |  |
+| runtime                 |          | str  | `'python'` or `'spark-py'` |  |
+| custom_base_image       |          | str  | |  |
+| cpu_cores               |          | float  | |  |
+| memory_gb               |          | float  | |  |
 | delete_service_after_test |          | bool  | |  |
 | no_code_deployment_enabled |          | bool  | |  |
-| tags                    |          | bool  | |  |
-| properties              |          | bool  | |  |
-| description             |          | bool  | |  |
+| tags                    |          | str  | |  |
+| properties              |          | str  | |  |
+| description             |          | str  | |  |
 
 ##### ACI Deployment
 
 | Parameter               | Required | Allowed Values | Default    | Description |
 | ----------------------- | -------- | -------------- | ---------- | ----------- |
-| location               |          |                |            |             |
-| gpu_cores | x        | str            |            | | 
-| ssl_enabled |          | str            |  |
-| ssl_cert_pem_file |          | str | |  | 
-| ssl_key_pem_file            |          | str      |      |  |
-| ssl_cname   |          | dict  | |  |
-| dns_name_label        |          | dict  | | |
-| cmk_vault_base_url      |          | str   | | |
-| cmk_key_name                |          | list  | |  |
-| cmk_key_value |          | str   | |  |
+| location               |           | str   |            | |
+| gpu_cores              |           | float |            | | 
+| ssl_enabled            |           | bool  |  |
+| ssl_cert_pem_file      |           | str   |  |  | 
+| ssl_key_pem_file       |          | str      |      |  |
+| ssl_cname              |          | str  | |  |
+| dns_name_label         |          | str  | | |
+| cmk_vault_base_url     |          | str   | | |
+| cmk_key_name           |          | str  | |  |
+| cmk_key_value          |          | str   | |  |
 
 ##### AKS Deployment
 
 | Parameter               | Required | Allowed Values | Default    | Description |
 | ----------------------- | -------- | -------------- | ---------- | ----------- |
-| autoscale_enabled       |          |                |            |             |
-| autoscale_min_replicas  | x        | str            |            | | 
-| autoscale_max_replicas  |          | str            |  |
-| autoscale_refresh_seconds |          | str | |  | 
-| autoscale_target_utilization |          | str      |      |  |
-| scoring_timeout_ms      |          | dict  | |  |
-| replica_max_concurrent_requests |          | dict  | | |
-| max_request_wait_time   |          | str   | | |
-| num_replicas            |          | list  | |  |
-| period_seconds          |          | str   | |  |
-| initial_delay_seconds   |          | str   | |  |
+| autoscale_enabled       |          | bool           |            |             |
+| autoscale_min_replicas  | x        | int            |            | | 
+| autoscale_max_replicas  |          | int            |  |
+| autoscale_refresh_seconds |          | float | |  | 
+| autoscale_target_utilization|          | float      |      |  |
+| scoring_timeout_ms      |          | float  | |  |
+| replica_max_concurrent_requests|          | float  | | |
+| max_request_wait_time   |          | float   | | |
+| num_replicas            |          | int     | |  |
+| period_seconds          |          | float   | |  |
+| initial_delay_seconds   |          | float   | |  |
 | timeout_seconds         |          | float | |  |
 | success_threshold       |          | float | |  |
-| failure_threshold       |          | str   | |  |
-| namespace               |          | list  | |  |
-| token_auth_enabled      |          | list  | |  |
+| failure_threshold       |          | float   | |  |
+| namespace               |          | str  | |  |
+| token_auth_enabled      |          | bool  | |  |
 
 # Contributing
 
