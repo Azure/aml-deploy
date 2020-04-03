@@ -81,101 +81,46 @@ Add the JSON output as [a secret](https://help.github.com/en/actions/configuring
 The action expects a JSON file in the `.ml/.azure` folder in your repository, which specifies details for the model registration to your Azure Machine Learning Workspace. By default, the action expects a file with the name `registermodel.json`. If your JSON file has a different name, you can specify it with this parameter.
 
 A sample file can be found in this repository in the folder `.ml/.azure`. There are separate parameters that are used for the ACI deployment, the AKS deployment and some that are for both deployments.
-
-"name": "<your-webservice-name>",
-    "deployment_compute_target": "<your-deployment-compute-target-name>", // do not specify deployment compute target name for deployment on Azure Container Registry
-    "inference_source_directory": "<your-inference-source-directory>",
-    "inference_entry_script": "<your-inference-entry-script>",
-    "test_enabled": true,
-    "test_source_directory": "<your-test-source-directory>",
-    "test_script_name": "<your-test-script-name>",
-    "test_function_name": "<your-test-function-name>",
-    "conda_file": "<your-conda-environment-file-path>",
-    "extra_docker_file_steps": "<your-extra-docker-steps-file-path>",
-    "enable_gpu": false,
-    "cuda_version": "<your-cuda-version>",
-    "model_data_collection_enabled": true,
-    "authentication_enabled": true,
-    "app_insights_enabled": true,
-    "runtime": "<'python' or 'spark-py'>",
-    "custom_base_image": "<your-custom-docker-base-image>",
-    "cpu_cores": 0.1,
-    "memory_gb": 0.5,
-    "delete_service_after_test": false,
-    "no_code_deployment_enabled": false,
-    "tags": {"<your-webservice-tag-key>": "<your-webservice-tag-value>"},
-    "properties": {"<your-webservice-property-key>": "<your-webservice-property-value>"},
-    "description": "<your-webservice-description>",
-
-    // aci specific parameters
-    "location": "<your-aci-location>",
-    "gpu_cores": 0,
-    "ssl_enabled": true,
-    "ssl_cert_pem_file": "<your-aci-ssl-cert-pem-file>",
-    "ssl_key_pem_file": "<your-aci-ssl-key-pem-file>",
-    "ssl_cname": "<your-aci-ssl-cname>",
-    "dns_name_label": "<your-aci-dns-name-label>",
-    "cmk_vault_base_url": "<your-aci-cmk-vault-base-url>",
-    "cmk_key_name": "<your-aci-cmk-key-name>",
-    "cmk_key_version": "<your-aci-cmk-key-version>",
-
-    // aks specific parameters
-    "autoscale_enabled": true,
-    "autoscale_min_replicas": 1,
-    "autoscale_max_replicas": 10,
-    "autoscale_refresh_seconds": 1,
-    "autoscale_target_utilization": 70,
-    "scoring_timeout_ms": 60000,
-    "replica_max_concurrent_requests": 1,
-    "max_request_wait_time": 1000,
-    "num_replicas": null,
-    "period_seconds": 10,
-    "initial_delay_seconds": 310,
-    "timeout_seconds": 2,
-    "success_threshold": 1,
-    "failure_threshold": 3,
-    "namespace": "<your-aks-namespace>",
-    "token_auth_enabled": true
     
 ##### Both Deplployments
 
 | Parameter               | Required | Allowed Values | Default    | Description |
 | ----------------------- | -------- | -------------- | ---------- | ----------- |
-| name               |          |                |            |             |
-| deployment_compute_target | x        | str            |            | | 
-| inference_source_directory |          | str            |  |
-| inference_entry_script |          | str | |  | 
-| test_enabled            |          | bool      |      |  |
+| name                    |          |      | |  |
+| deployment_compute_target | x      | str  | |  | 
+| inference_source_directory |       | str  | | The path to the folder that contains all files to create the image. |
+| inference_entry_script  |          | str  | | The path to a local file that contains the code to run for the image. | 
+| test_enabled            |          | bool | |  |
 | test_source_directory   |          | str  | |  |
-| test_script_name        |          | str  | | |
+| test_script_name        |          | str  | |  |
 | test_function_name      |          | str   | | |
-| conda_file                |          | bool  | |  |
-| extra_docker_file_steps |          | str   | |  |
-| enable_gpu              |          | str   | |  |
-| cuda_version            |          | str | |  |
-| model_data_collection_enabled |          | bool | |  |
+| conda_file              |          | bool  | | The path to a local file containing a conda environment definition to use for the image. |
+| extra_docker_file_steps |          | str   | | The path to a local file containing additional Docker steps to run when setting up image. |
+| enable_gpu              |          | str   | False | Indicates whether to enable GPU support in the image. The GPU image must be used on Microsoft Azure Services such as Azure Container Instances, Azure Machine Learning Compute, Azure Virtual Machines, and Azure Kubernetes Service. Defaults to False. |
+| cuda_version            |          | str | | The Version of CUDA to install for images that need GPU support. The GPU image must be used on Microsoft Azure Services such as Azure Container Instances, Azure Machine Learning Compute, Azure Virtual Machines, and Azure Kubernetes Service. Supported versions are 9.0, 9.1, and 10.0. If enable_gpu is set, this defaults to '9.1'. |
+| model_data_collection_enabled |    | bool | |  |
 | authentication_enabled  |          | bool   | |  |
 | app_insights_enabled    |          | bool  | |  |
-| runtime                 |          | str  | `'python'` or `'spark-py'` |  |
-| custom_base_image       |          | str  | |  |
+| runtime                 |          | str  | `'python'` or `'spark-py'` | The runtime to use for the image. Current supported runtimes are 'spark-py' and 'python'. |
+| custom_base_image       |          | str  | | A custom image to be used as base image. If no base image is given then the base image will be used based off of given runtime parameter. |
 | cpu_cores               |          | float  | |  |
 | memory_gb               |          | float  | |  |
 | delete_service_after_test |          | bool  | |  |
 | no_code_deployment_enabled |          | bool  | |  |
 | tags                    |          | str  | |  |
 | properties              |          | str  | |  |
-| description             |          | str  | |  |
+| description             |          | str  | | A description to give this image. |
 
 ##### ACI Deployment
 
 | Parameter               | Required | Allowed Values | Default    | Description |
 | ----------------------- | -------- | -------------- | ---------- | ----------- |
-| location               |           | str   |            | |
+| location               |           | str   |     | The location to provision cluster in. If not specified, will default to workspace location. Available regions for this compute can be found here: https://azure.microsoft.com/global-infrastructure/services/?regions=all&products=kubernetes-service |
 | gpu_cores              |           | float |            | | 
 | ssl_enabled            |           | bool  |  |
-| ssl_cert_pem_file      |           | str   |  |  | 
-| ssl_key_pem_file       |          | str      |      |  |
-| ssl_cname              |          | str  | |  |
+| ssl_cert_pem_file      |           | str   |  | A file path to a file containing cert information for SSL validation. Must provide all three CName, cert file, and key file to enable SSL validation. | 
+| ssl_key_pem_file       |          | str      |      | A file path to a file containing key information for SSL validation. Must provide all three CName, cert file, and key file to enable SSL validation. |
+| ssl_cname              |          | str  | | A CName to use if enabling SSL validation on the cluster. Must provide all three CName, cert file, and key file to enable SSL validation. |
 | dns_name_label         |          | str  | | |
 | cmk_vault_base_url     |          | str   | | |
 | cmk_key_name           |          | str  | |  |
