@@ -93,7 +93,7 @@ Documentation for the paramets can be found at the following links:
 | Parameter               | Required | Allowed Values | Default    | Description |
 | ----------------------- | -------- | -------------- | ---------- | ----------- |
 | name                    |          | str  | <REPOSITORY_NAME>-<BRANCH_NAME> | The name to give the deployed service. Must be unique to the workspace, only consist of lowercase letters, numbers, or dashes, start with a letter, and be between 3 and 32 characters long. |
-| deployment_compute_target |        | str  | | A ComputeTarget to deploy the Webservice to. As Azure Container Instances has no associated ComputeTarget, leave this parameter as None to deploy to Azure Container Instances. | 
+| deployment_compute_target |        | str  | ACI | A ComputeTarget to deploy the Webservice to. As Azure Container Instances has no associated ComputeTarget, leave this parameter as None to deploy to Azure Container Instances. | 
 | inference_source_directory |       | str  | | The path to the folder that contains all files to create the image. |
 | inference_entry_script  |          | str  | | The path to a local file that contains the code to run for the image. | 
 | test_enabled            |          | bool | | Whether to run tests for this model deployment |
