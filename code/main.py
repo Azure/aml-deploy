@@ -225,7 +225,7 @@ def main():
         # Default service name
         repository_name = os.environ.get("GITHUB_REPOSITORY").split("/")[-1]
         branch_name = os.environ.get("GITHUB_REF").split("/")[-1]
-        default_service_name = f"{repository_name}-{branch_name}".lower().replace("_", "-")
+        default_service_name = f"{repository_name}-{branch_name}".lower().replace("_", "-")[:32]
 
         service = Model.deploy(
             workspace=ws,
