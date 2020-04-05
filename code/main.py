@@ -118,11 +118,11 @@ def main():
 
     # Creating inference config
     print("::debug::Creating inference config")
-    if parameters.get("custom_container_registry_address", None) is not None:
+    if os.environ.get("CONTAINER_REGISTRY_ADRESS", None) is not None:
         container_registry = ContainerRegistry()
-        container_registry.address = os.environ.get("CONTAINERREGISTRYADRESS", None)
-        container_registry.username = os.environ.get("CONTAINERREGISTRYUSERNAME", None)
-        container_registry.password = os.environ.get("CONTAINERREGISTRYPASSWORD", None)
+        container_registry.address = os.environ.get("CONTAINER_REGISTRY_ADRESS", None)
+        container_registry.username = os.environ.get("CONTAINER_REGISTRY_USERNAME", None)
+        container_registry.password = os.environ.get("CONTAINER_REGISTRY_PASSWORD", None)
     else:
         container_registry = None
 
@@ -183,8 +183,8 @@ def main():
             replica_max_concurrent_requests=parameters.get("replica_max_concurrent_requests", None),
             max_request_wait_time=parameters.get("max_request_wait_time", None),
             num_replicas=parameters.get("num_replicas", None),
-            primary_key=os.environ.get("PRIMARYKEY", None),
-            secondary_key=os.environ.get("SECONDARYKEY", None),
+            primary_key=os.environ.get("PRIMARY_KEY", None),
+            secondary_key=os.environ.get("SECONDARY_KEY", None),
             tags=parameters.get("tags", None),
             properties=parameters.get("properties", None),
             description=parameters.get("description", None),
@@ -212,12 +212,12 @@ def main():
             ssl_key_pem_file=parameters.get("ssl_key_pem_file", None),
             ssl_cname=parameters.get("ssl_cname", None),
             dns_name_label=parameters.get("dns_name_label", None),
-            primary_key=os.environ.get("PRIMARYKEY", None),
-            secondary_key=os.environ.get("SECONDARYKEY", None),
+            primary_key=os.environ.get("PRIMARY_KEY", None),
+            secondary_key=os.environ.get("SECONDARY_KEY", None),
             collect_model_data=parameters.get("model_data_collection_enabled", None),
-            cmk_vault_base_url=parameters.get("cmk_vault_base_url", None),
-            cmk_key_name=parameters.get("cmk_key_name", None),
-            cmk_key_version=parameters.get("cmk_key_version", None)
+            cmk_vault_base_url=os.environ.get("CMK_VAULT_BASE_URL", None),
+            cmk_key_name=os.environ.get("CMK_KEY_NAME", None),
+            cmk_key_version=os.environ.get("CMK_KEY_VERSION", None)
         )
 
     # Deploying model

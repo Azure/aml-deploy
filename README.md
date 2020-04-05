@@ -142,9 +142,6 @@ ACI is the default deployment resource. A sample file for an aci deployment can 
 | ssl_key_pem_file       |           | st    | null | A file path to a file containing key information for SSL validation. Must provide all three CName, cert file, and key file to enable SSL validation. |
 | ssl_cname              |           | str   | null | A CName to use if enabling SSL validation on the cluster. Must provide all three CName, cert file, and key file to enable SSL validation. |
 | dns_name_label         |           | str   | null | The DNS name label for the scoring endpoint. If not specified a unique DNS name label will be generated for the scoring endpoint. |
-| cmk_vault_base_url     |           | str   | null | Customer managed Key Vault base url. |
-| cmk_key_name           |           | str   | null | Customer managed key name. |
-| cmk_key_value          |           | str   | null | Customer managed key version. |
 
 Please visit [this website](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice.aciwebservice?view=azure-ml-py#deploy-configuration-cpu-cores-none--memory-gb-none--tags-none--properties-none--description-none--location-none--auth-enabled-none--ssl-enabled-none--enable-app-insights-none--ssl-cert-pem-file-none--ssl-key-pem-file-none--ssl-cname-none--dns-name-label-none--primary-key-none--secondary-key-none--collect-model-data-none--cmk-vault-base-url-none--cmk-key-name-none--cmk-key-version-none-) for more details.
 
@@ -180,6 +177,21 @@ Please visit [this website](https://docs.microsoft.com/en-us/python/api/azureml-
 | ------------------- | ------------------------------- |
 | service_scoring_uri | Scoring URI of the webservice that was created (only provided if delete_service_after_test is set to False). |
 | service_swagger_uri | Swagger Uri of the webservice that was created (only provided if delete_service_after_test is set to False). |
+
+### Environment variables
+
+Certain parameters are considered secrets and should therefore be passed as environment variables from your secrets, if you want to use custom values.
+
+| Environment variable        | Required | Allowed Values | Default | Description |
+| --------------------------- | -------- | -------------- | ------- | ----------- |
+| CONTAINER_REGISTRY_ADRESS   |          | str            | null    | The DNS name or IP address of the Azure Container Registry (ACR). Required, if you specified a `custom_base_image` that is only available in your ACR. |
+| CONTAINER_REGISTRY_USERNAME |          | str            | null    | The username for ACR. Required, if you specified a `custom_base_image` that is only available in your ACR. |
+| CONTAINER_REGISTRY_PASSWORD |          | str            | null    | The password for ACR. Required, if you specified a `custom_base_image` that is only available in your ACR. |
+| PRIMARY_KEY                 |          | str            | null    | A primary auth key to use for this Webservice. If not specified, Azure will automatically assign a key. |
+| SECONDARY_KEY               |          | str            | null    | A secondary auth key to use for this Webservice. If not specified, Azure will automatically assign a key. |
+| CMK_VAULT_BASE_URL          |           | str   | null | Customer managed Key Vault base url. This value is ACI specific. |
+| CMK_KEY_NAME                |           | str   | null | Customer managed key name.  This value is ACI specific. |
+| CMK_KEY_VERSION             |           | str   | null | Customer managed key version.  This value is ACI specific. |
 
 ### Other Azure Machine Learning Actions
 
