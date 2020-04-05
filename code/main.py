@@ -239,15 +239,16 @@ def main():
         )
         service.wait_for_deployment(show_output=True)
     except WebserviceException as exception:
+        print(f"::error::Model deployment failed with exception: {exception}")
         service_logs = service.get_logs()
-        print(f"::error::Model deployment failed with logs: {service_logs} \nexception: {exception}")
         raise AMLDeploymentException(f"Model deployment failedlogs: {service_logs} \nexception: {exception}")
 
     # Checking status of service
     print("::debug::Checking status of service")
     if service.state != "Healthy":
-        print(f"::error::Model deployment failed with state '{service.state}': {service.get_logs()}")
-        raise AMLDeploymentException(f"Model deployment failed with state '{service.state}': {service.get_logs()}")
+        service_logs = service.get_logs()
+        print(f"::error::Model deployment failed with state '{service.state}': {service_logs}")
+        raise AMLDeploymentException(f"Model deployment failed with state '{service.state}': {service_logs}")
 
     if parameters.get("test_enabled", False):
         # Testing service
