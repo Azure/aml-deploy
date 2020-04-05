@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import importlib
 
@@ -17,7 +18,7 @@ from utils import AMLConfigurationException, AMLDeploymentException, required_pa
 def main():
     # Loading input values
     print("::debug::Loading input values")
-    parameters_file = os.environ.get("INPUT_PARAMETERS_FILE", default="compute.json")
+    parameters_file = os.environ.get("INPUT_PARAMETERS_FILE", default="deploy.json")
     azure_credentials = os.environ.get("INPUT_AZURE_CREDENTIALS", default="{}")
     model_name = os.environ.get("INPUT_MODEL_NAME", default=None)
     model_version = os.environ.get("INPUT_MODEL_VERSION", default=None)
@@ -60,7 +61,7 @@ def main():
         with open(parameters_file_path) as f:
             parameters = json.load(f)
     except FileNotFoundError:
-        print(f"::debug::Could not find parameter file in {parameters_file_path}. Please provide a parameter file in your repository  if you do not want to use default settings (e.g. .cloud/.azure/workspace.json).")
+        print(f"::debug::Could not find parameter file in {parameters_file_path}. Please provide a parameter file in your repository  if you do not want to use default settings (e.g. .cloud/.azure/deploy.json).")
         parameters = {}
 
     # Loading Workspace
@@ -251,8 +252,12 @@ def main():
     if parameters.get("test_enabled", False):
         # Testing service
         print("::debug::Testing service")
+        root = os.environ.get("GITHUB_WORKSPACE", default=None)
         test_file_path = parameters.get("test_file_path", "code/test/test.py")
         test_file_function_name = parameters.get("test_file_function_name", "main")
+
+        print("::debug::Adding root to system path")
+        sys.path.insert(1, f"{root}")
 
         print("::debug::Importing module")
         test_file_path = f"{test_file_path}.py" if not test_file_path.endswith(".py") else test_file_path
@@ -281,9 +286,12 @@ def main():
         except TypeError as exception:
             print(f"::error::Could not load experiment config from your module (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
             raise AMLConfigurationException(f"Could not load experiment config from your module (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+        except Exception as exception:
+            print(f"::error::The webservice tests did not complete successfully: {exception}")
+            raise AMLDeploymentException(f"The webservice tests did not complete successfully: {exception}")
 
     # Deleting service if desired
-    if parameters.get("delete_service_after_test", False):
+    if parameters.get("delete_service_after_deployment", False):
         service.delete()
     else:
         # Create outputs
