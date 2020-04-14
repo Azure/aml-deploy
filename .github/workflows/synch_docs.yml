@@ -1,0 +1,30 @@
+name: Synch Documentation
+on: [push, pull_request]
+jobs:
+  synch:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Out Repository
+      id: checkout_repository
+      uses: actions/checkout@v2
+      with:
+        path: "aml-deploy"
+    
+    - name: Check Out Docs Repository
+      id: checkout_docs_repository
+      uses: actions/checkout@v2
+      with:
+        repository: "machine-learning-apps/MLOps"
+        path: "MLOps"
+    
+    - name: Copy file to docs repo and commit changes
+      run: |
+        cp aml-deploy/README.md MLOps/site/docs/aml-deploy.md
+        cd MLOps
+        git config --local --unset-all "http.https://github.com/.extraheader"
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub AML Deploy Action"
+        git add .
+        git commit -m "Add changes of deploy readme" -a
+        git push "https://${{ secrets.GH_TOKEN }}@github.com/machine-learning-apps/MLOps.git" HEAD:master --force
+      continue-on-error: true
