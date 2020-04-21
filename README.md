@@ -32,13 +32,13 @@ jobs:
       uses: actions/checkout@v2
 
     # AML Workspace Action
-    - uses: Azure/aml-workspace
+    - uses: Azure/aml-workspace@v1
       id: aml_workspace
       with:
         azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
     
     # AML Register Model Action
-    - uses: Azure/aml-registermodel
+    - uses: Azure/aml-registermodel@v1
       id: aml_registermodel
       with:
         azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
@@ -48,7 +48,7 @@ jobs:
     # Deploy model in Azure Machine Learning to ACI
     - name: Deploy model
       id: aml_deploy
-      uses: Azure/aml-deploy@master
+      uses: Azure/aml-deploy@v1
       with:
         # required inputs
         azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
