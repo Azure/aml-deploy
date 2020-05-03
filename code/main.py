@@ -12,24 +12,18 @@ from azureml.core.authentication import ServicePrincipalAuthentication
 from adal.adal_error import AdalError
 from msrest.exceptions import AuthenticationError
 from json import JSONDecodeError
-from utils import AMLConfigurationException, AMLDeploymentException, required_parameters_provided, get_resource_config, mask_parameter
+from utils import AMLConfigurationException, AMLDeploymentException, get_resource_config, mask_parameter, validate_json
+from schemas import azure_credentials_schema, parameters_schema
 
 
 def main():
     # Loading input values
     print("::debug::Loading input values")
-    parameters_file = os.environ.get("INPUT_PARAMETERS_FILE", default="deploy.json")
-    azure_credentials = os.environ.get("INPUT_AZURE_CREDENTIALS", default="{}")
     model_name = os.environ.get("INPUT_MODEL_NAME", default=None)
     model_version = os.environ.get("INPUT_MODEL_VERSION", default=None)
 
     # Casting input values
     print("::debug::Casting input values")
-    try:
-        azure_credentials = json.loads(azure_credentials)
-    except JSONDecodeError:
-        print("::error::Please paste output of `az ad sp create-for-rbac --name <your-sp-name> --role contributor --scopes /subscriptions/<your-subscriptionId>/resourceGroups/<your-rg> --sdk-auth` as value of secret variable: AZURE_CREDENTIALS")
-        raise AMLConfigurationException(f"Incorrect or poorly formed output from azure credentials saved in AZURE_CREDENTIALS secret. See setup in https://github.com/Azure/aml-compute/blob/master/README.md")
     try:
         model_version = int(model_version)
     except TypeError as exception:
@@ -39,12 +33,21 @@ def main():
         print(f"::debug::Could not cast model version to int: {exception}")
         model_version = None
 
+    # Loading azure credentials
+    print("::debug::Loading azure credentials")
+    azure_credentials = os.environ.get("INPUT_AZURE_CREDENTIALS", default="{}")
+    try:
+        azure_credentials = json.loads(azure_credentials)
+    except JSONDecodeError:
+        print("::error::Please paste output of `az ad sp create-for-rbac --name <your-sp-name> --role contributor --scopes /subscriptions/<your-subscriptionId>/resourceGroups/<your-rg> --sdk-auth` as value of secret variable: AZURE_CREDENTIALS")
+        raise AMLConfigurationException(f"Incorrect or poorly formed output from azure credentials saved in AZURE_CREDENTIALS secret. See setup in https://github.com/Azure/aml-compute/blob/master/README.md")
+
     # Checking provided parameters
     print("::debug::Checking provided parameters")
-    required_parameters_provided(
-        parameters=azure_credentials,
-        keys=["tenantId", "clientId", "clientSecret"],
-        message="Required parameter(s) not found in your azure credentials saved in AZURE_CREDENTIALS secret for logging in to the workspace. Please provide a value for the following key(s): "
+    validate_json(
+        data=azure_credentials,
+        schema=azure_credentials_schema,
+        input_name="AZURE_CREDENTIALS"
     )
 
     # Mask values
@@ -56,6 +59,7 @@ def main():
 
     # Loading parameters file
     print("::debug::Loading parameters file")
+    parameters_file = os.environ.get("INPUT_PARAMETERS_FILE", default="deploy.json")
     parameters_file_path = os.path.join(".cloud", ".azure", parameters_file)
     try:
         with open(parameters_file_path) as f:
@@ -63,6 +67,14 @@ def main():
     except FileNotFoundError:
         print(f"::debug::Could not find parameter file in {parameters_file_path}. Please provide a parameter file in your repository  if you do not want to use default settings (e.g. .cloud/.azure/deploy.json).")
         parameters = {}
+    
+    # Checking provided parameters
+    print("::debug::Checking provided parameters")
+    validate_json(
+        data=parameters,
+        schema=parameters_schema,
+        input_name="PARAMETERS_FILE"
+    )
 
     # Loading Workspace
     print("::debug::Loading AML Workspace")

@@ -1,8 +1,8 @@
-name: Lint
+name: Lint and Test
 on: [push, pull_request]
 jobs:
   lint:
-    name: Lint
+    name: Lint and Test
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python 3.7
@@ -19,5 +19,11 @@ jobs:
         id: python_linting
         run: |
           pip install flake8
-          flake8 --ignore E501 code/main.py
-          flake8 --ignore E501 code/utils.py
+          flake8 code/ --count --ignore=E501 --show-source --statistics
+          flake8 tests/ --count --ignore=E501,E402 --show-source --statistics
+      
+      - name: Test
+        id: python_test
+        run: |
+          pip install pytest jsonschema azureml-sdk
+          pytest
