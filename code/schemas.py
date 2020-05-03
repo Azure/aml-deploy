@@ -223,12 +223,11 @@ parameters_schema = {
             "type": "string",
             "description": "The Kubernetes namespace in which to deploy this Webservice.",
             "maxLength": 63,
-            "pattern": "([a-z0-9\-])+"
+            "pattern": "([a-z0-9-])+"
         },
         "token_auth_enabled": {
             "type": "boolean",
             "description": "Whether to enable Token authentication for this Webservice."
         }
-        
     }
 }
