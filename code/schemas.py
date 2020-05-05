@@ -101,13 +101,15 @@ parameters_schema = {
         },
         "cpu_cores": {
             "type": "number",
-            "description": "The number of CPU cores to allocate for this Webservice."
+            "description": "The number of CPU cores to allocate for this Webservice.",
+            "exclusiveMinimum": 0.0
         },
         "memory_gb": {
             "type": "number",
-            "description": "The amount of memory (in GB) to allocate for this Webservice."
+            "description": "The amount of memory (in GB) to allocate for this Webservice.",
+            "exclusiveMinimum": 0.0
         },
-        "delete_service_after_test": {
+        "delete_service_after_deployment": {
             "type": "boolean",
             "description": "Indicates whether the service gets deleted after the deployment completed successfully."
         },
@@ -149,7 +151,8 @@ parameters_schema = {
         },
         "gpu_cores": {
             "type": "integer",
-            "description": "The number of GPU cores to allocate for this Webservice."
+            "description": "The number of GPU cores to allocate for this Webservice.",
+            "minimum": 0
         },
         "autoscale_enabled": {
             "type": "boolean",
@@ -188,7 +191,8 @@ parameters_schema = {
         },
         "max_request_wait_time": {
             "type": "integer",
-            "description": "The maximum amount of time a request will stay in the queue (in milliseconds) before returning a 503 error."
+            "description": "The maximum amount of time a request will stay in the queue (in milliseconds) before returning a 503 error.",
+            "minimum": 0
         },
         "num_replicas": {
             "type": "integer",

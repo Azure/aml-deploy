@@ -118,8 +118,8 @@ A sample file can be found in this repository in the folder `.cloud/.azure`. The
 | model_data_collection_enabled |    | bool | false | Whether or not to enable model data collection for this Webservice. |
 | authentication_enabled  |          | bool | false for ACI, true for AKS | Whether or not to enable key auth for this Webservice. |
 | app_insights_enabled    |          | bool | false | Whether or not to enable Application Insights logging for this Webservice. |
-| cpu_cores               |          | float | 0.1 | The number of CPU cores to allocate for this Webservice. Can be a decimal. |
-| memory_gb               |          | float  | 0.5 | The amount of memory (in GB) to allocate for this Webservice. Can be a decimal. |
+| cpu_cores               |          | float: ]0.0, inf[ | 0.1 | The number of CPU cores to allocate for this Webservice. Can be a decimal. |
+| memory_gb               |          | float: ]0.0, inf[ | 0.5 | The amount of memory (in GB) to allocate for this Webservice. Can be a decimal. |
 | delete_service_after_deployment |  | bool | false | Indicates whether the service gets deleted after the deployment completed successfully. |
 | tags                    |          | dict: {"<your-run-tag-key>": "<your-run-tag-value>", ...} | null | Dictionary of key value tags to give this Webservice. |
 | properties              |          | dict: {"<your-run-tag-key>": "<your-run-tag-value>", ...} | | Dictionary of key value properties to give this Webservice. These properties cannot be changed after deployment, however new key value pairs can be added. |
@@ -151,18 +151,18 @@ For the deployment of the model to AKS, you must configure an AKS resource and s
 
 | Parameter               | Required | Allowed Values | Default    | Description |
 | ----------------------- | -------- | -------------- | ---------- | ----------- |
-| gpu_cores              |           | int | 1 | The number of GPU cores to allocate for this Webservice. |
+| gpu_cores              |           | int: [0, inf[ | 1 | The number of GPU cores to allocate for this Webservice. |
 | autoscale_enabled       |          | bool  | true if `num_replicas` is null | Whether to enable autoscale for this Webservice. |
-| autoscale_min_replicas  |          | int   | 1 | The minimum number of containers to use when autoscaling this Webservice. | 
-| autoscale_max_replicas  |          | int   | 10 | The maximum number of containers to use when autoscaling this Webservice. |
-| autoscale_refresh_seconds |        | int   | 1 | How often the autoscaler should attempt to scale this Webservice (in seconds). | 
-| autoscale_target_utilization|      | int   | 70 | The target utilization (in percent out of 100) the autoscaler should attempt to maintain for this Webservice. |
-| scoring_timeout_ms      |          | int   | 60000 | A timeout in ms to enforce for scoring calls to this Webservice. |
-| replica_max_concurrent_requests|   | int   | 1 | The number of maximum concurrent requests per replica to allow for this Webservice. **Do not change this setting from the default value of 1 unless instructed by Microsoft Technical Support or a member of Azure Machine Learning team.** |
-| max_request_wait_time   |          | int   | 500 | The maximum amount of time a request will stay in the queue (in milliseconds) before returning a 503 error. |
+| autoscale_min_replicas  |          | int: [1, inf[ | 1 | The minimum number of containers to use when autoscaling this Webservice. | 
+| autoscale_max_replicas  |          | int: [1, inf[ | 10 | The maximum number of containers to use when autoscaling this Webservice. |
+| autoscale_refresh_seconds |        | int: [1, inf[ | 1 | How often the autoscaler should attempt to scale this Webservice (in seconds). | 
+| autoscale_target_utilization|      | int: [1, 100] | 70 | The target utilization (in percent out of 100) the autoscaler should attempt to maintain for this Webservice. |
+| scoring_timeout_ms      |          | int: [1, inf[ | 60000 | A timeout in ms to enforce for scoring calls to this Webservice. |
+| replica_max_concurrent_requests|   | int: [1, inf[ | 1 | The number of maximum concurrent requests per replica to allow for this Webservice. **Do not change this setting from the default value of 1 unless instructed by Microsoft Technical Support or a member of Azure Machine Learning team.** |
+| max_request_wait_time   |          | int: [0, inf[ | 500 | The maximum amount of time a request will stay in the queue (in milliseconds) before returning a 503 error. |
 | num_replicas            |          | int   | null | The number of containers to allocate for this Webservice. **No default, if this parameter is not set then the autoscaler is enabled by default.** |
 | period_seconds          |          | int: [1, inf[ | 10 | How often (in seconds) to perform the liveness probe. |
-| initial_delay_seconds   |          | int   | 310 | The number of seconds after the container has started before liveness probes are initiated. |
+| initial_delay_seconds   |          | int: [1, inf[ | 310 | The number of seconds after the container has started before liveness probes are initiated. |
 | timeout_seconds         |          | int: [1, inf[ | 1  | The number of seconds after which the liveness probe times out. |
 | success_threshold       |          | int: [1, inf[ | 1 | The minimum consecutive successes for the liveness probe to be considered successful after having failed. |
 | failure_threshold       |          | int: [1, inf[ | 3  | When a Pod starts and the liveness probe fails, Kubernetes will try failureThreshold times before giving up. |
