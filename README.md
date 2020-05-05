@@ -111,15 +111,15 @@ A sample file can be found in this repository in the folder `.cloud/.azure`. The
 | inference_entry_script  |          | str  | `"score.py"` | The path to a local file in your repository that contains the code to run for the image and score the data. This path is relative to the specified source directory. The python script has to define an `init` and a `run` function. A sample can be found in the template repositories. |
 | conda_file              |          | str  | `"environment.yml"` | The path to a local file in your repository containing a conda environment definition to use for the image. This path is relative to the specified source directory. |
 | extra_docker_file_steps |          | str   | null | The path to a local file in your repository containing additional Docker steps to run when setting up image. This path is relative to the specified source directory. |
-| enable_gpu              |          | str   | false | Indicates whether to enable GPU support in the image. The GPU image must be used on Microsoft Azure Services such as Azure Container Instances, Azure Machine Learning Compute, Azure Virtual Machines, and Azure Kubernetes Service. |
+| enable_gpu              |          | bool | false | Indicates whether to enable GPU support in the image. The GPU image must be used on Microsoft Azure Services such as Azure Container Instances, Azure Machine Learning Compute, Azure Virtual Machines, and Azure Kubernetes Service. |
 | cuda_version            |          | str | `"9.1"` if `enable_gpu` is set to true | The Version of CUDA to install for images that need GPU support. The GPU image must be used on Microsoft Azure Services such as Azure Container Instances, Azure Machine Learning Compute, Azure Virtual Machines, and Azure Kubernetes Service. Supported versions are 9.0, 9.1, and 10.0. |
 | runtime                 |          | str: `"python"` or `"spark-py"` | `"python"` | The runtime to use for the image. |
 | custom_base_image       |          | str  | null | A custom Docker image to be used as base image. If no base image is given then the base image will be used based off of given runtime parameter. |
 | model_data_collection_enabled |    | bool | false | Whether or not to enable model data collection for this Webservice. |
 | authentication_enabled  |          | bool | false for ACI, true for AKS | Whether or not to enable key auth for this Webservice. |
-| app_insights_enabled    |          | bool  | false | Whether or not to enable Application Insights logging for this Webservice. |
-| cpu_cores               |          | float | 0.1 | The number of CPU cores to allocate for this Webservice. Can be a decimal. |
-| memory_gb               |          | float  | 0.5 | The amount of memory (in GB) to allocate for this Webservice. Can be a decimal. |
+| app_insights_enabled    |          | bool | false | Whether or not to enable Application Insights logging for this Webservice. |
+| cpu_cores               |          | float: ]0.0, inf[ | 0.1 | The number of CPU cores to allocate for this Webservice. Can be a decimal. |
+| memory_gb               |          | float: ]0.0, inf[ | 0.5 | The amount of memory (in GB) to allocate for this Webservice. Can be a decimal. |
 | delete_service_after_deployment |  | bool | false | Indicates whether the service gets deleted after the deployment completed successfully. |
 | tags                    |          | dict: {"<your-run-tag-key>": "<your-run-tag-value>", ...} | null | Dictionary of key value tags to give this Webservice. |
 | properties              |          | dict: {"<your-run-tag-key>": "<your-run-tag-value>", ...} | | Dictionary of key value properties to give this Webservice. These properties cannot be changed after deployment, however new key value pairs can be added. |
@@ -139,7 +139,7 @@ ACI is the default deployment resource. A sample file for an aci deployment can 
 | location               |           | str: [supported region](https://azure.microsoft.com/en-us/global-infrastructure/services/?products=container-instances) | workspace location | The Azure region to deploy this Webservice to. |
 | ssl_enabled            |           | bool  | false | Whether or not to enable SSL for this Webservice. |
 | ssl_cert_pem_file      |           | str   | null | A file path to a file containing cert information for SSL validation. Must provide all three CName, cert file, and key file to enable SSL validation. |
-| ssl_key_pem_file       |           | st    | null | A file path to a file containing key information for SSL validation. Must provide all three CName, cert file, and key file to enable SSL validation. |
+| ssl_key_pem_file       |           | str   | null | A file path to a file containing key information for SSL validation. Must provide all three CName, cert file, and key file to enable SSL validation. |
 | ssl_cname              |           | str   | null | A CName to use if enabling SSL validation on the cluster. Must provide all three CName, cert file, and key file to enable SSL validation. |
 | dns_name_label         |           | str   | null | The DNS name label for the scoring endpoint. If not specified a unique DNS name label will be generated for the scoring endpoint. |
 
@@ -151,23 +151,23 @@ For the deployment of the model to AKS, you must configure an AKS resource and s
 
 | Parameter               | Required | Allowed Values | Default    | Description |
 | ----------------------- | -------- | -------------- | ---------- | ----------- |
-| gpu_cores              |           | float | 1 | The number of GPU cores to allocate for this Webservice. |
-| autoscale_enabled       |          | bool  | true if `num_replicas` is null | Whether or not to enable autoscaling for this Webservice. |
-| autoscale_min_replicas  |          | int   | 1 | The minimum number of containers to use when autoscaling this Webservice. | 
-| autoscale_max_replicas  |          | int   | 10 | The maximum number of containers to use when autoscaling this Webservice. |
-| autoscale_refresh_seconds |        | int   | 1 | How often the autoscaler should attempt to scale this Webservice. | 
-| autoscale_target_utilization|      | int   | 70 | The target utilization (in percent out of 100) the autoscaler should attempt to maintain for this Webservice. |
-| scoring_timeout_ms      |          | int   | 60000 | A timeout in ms to enforce for scoring calls to this Webservice. |
-| replica_max_concurrent_requests|   | float | 1 | The number of maximum concurrent requests per replica to allow for this Webservice. **Do not change this setting from the default value of 1 unless instructed by Microsoft Technical Support or a member of Azure Machine Learning team.** |
-| max_request_wait_time   |          | int   | 500 | The maximum amount of time a request will stay in the queue (in milliseconds) before returning a 503 error. |
+| gpu_cores              |           | int: [0, inf[ | 1 | The number of GPU cores to allocate for this Webservice. |
+| autoscale_enabled       |          | bool  | true if `num_replicas` is null | Whether to enable autoscale for this Webservice. |
+| autoscale_min_replicas  |          | int: [1, inf[ | 1 | The minimum number of containers to use when autoscaling this Webservice. | 
+| autoscale_max_replicas  |          | int: [1, inf[ | 10 | The maximum number of containers to use when autoscaling this Webservice. |
+| autoscale_refresh_seconds |        | int: [1, inf[ | 1 | How often the autoscaler should attempt to scale this Webservice (in seconds). | 
+| autoscale_target_utilization|      | int: [1, 100] | 70 | The target utilization (in percent out of 100) the autoscaler should attempt to maintain for this Webservice. |
+| scoring_timeout_ms      |          | int: [1, inf[ | 60000 | A timeout in ms to enforce for scoring calls to this Webservice. |
+| replica_max_concurrent_requests|   | int: [1, inf[ | 1 | The number of maximum concurrent requests per replica to allow for this Webservice. **Do not change this setting from the default value of 1 unless instructed by Microsoft Technical Support or a member of Azure Machine Learning team.** |
+| max_request_wait_time   |          | int: [0, inf[ | 500 | The maximum amount of time a request will stay in the queue (in milliseconds) before returning a 503 error. |
 | num_replicas            |          | int   | null | The number of containers to allocate for this Webservice. **No default, if this parameter is not set then the autoscaler is enabled by default.** |
 | period_seconds          |          | int: [1, inf[ | 10 | How often (in seconds) to perform the liveness probe. |
-| initial_delay_seconds   |          | int   | 310 | The number of seconds after the container has started before liveness probes are initiated. |
+| initial_delay_seconds   |          | int: [1, inf[ | 310 | The number of seconds after the container has started before liveness probes are initiated. |
 | timeout_seconds         |          | int: [1, inf[ | 1  | The number of seconds after which the liveness probe times out. |
 | success_threshold       |          | int: [1, inf[ | 1 | The minimum consecutive successes for the liveness probe to be considered successful after having failed. |
 | failure_threshold       |          | int: [1, inf[ | 3  | When a Pod starts and the liveness probe fails, Kubernetes will try failureThreshold times before giving up. |
 | namespace               |          | str   | null | The Kubernetes namespace in which to deploy this Webservice: up to 63 lowercase alphanumeric ('a'-'z', '0'-'9') and hyphen ('-') characters. The first and last characters cannot be hyphens. |
-| token_auth_enabled      |          | bool  | false | Whether or not to enable Token auth for this Webservice. If this is enabled, users can access this Webservice by fetching an access token using their Azure Active Directory credentials. |
+| token_auth_enabled      |          | bool  | false | Whether to enable Token authentication for this Webservice. If this is enabled, users can access this Webservice by fetching an access token using their Azure Active Directory credentials. |
 
 Please visit [this website](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice.aks.akswebservice?view=azure-ml-py#deploy-configuration-autoscale-enabled-none--autoscale-min-replicas-none--autoscale-max-replicas-none--autoscale-refresh-seconds-none--autoscale-target-utilization-none--collect-model-data-none--auth-enabled-none--cpu-cores-none--memory-gb-none--enable-app-insights-none--scoring-timeout-ms-none--replica-max-concurrent-requests-none--max-request-wait-time-none--num-replicas-none--primary-key-none--secondary-key-none--tags-none--properties-none--description-none--gpu-cores-none--period-seconds-none--initial-delay-seconds-none--timeout-seconds-none--success-threshold-none--failure-threshold-none--namespace-none--token-auth-enabled-none--compute-target-name-none-) for more details. More Information on autoscaling parameters can be found [here](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice.aks.autoscaler?view=azure-ml-py) and for liveness probe [here](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice.aks.livenessproberequirements?view=azure-ml-py).
 

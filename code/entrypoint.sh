@@ -2,5 +2,5 @@
 
 set -e
 
-ls -la
+ls -la code
 python /code/main.py
