@@ -38,4 +38,3 @@ def run(data):
 
     # You can return any JSON-serializable object.
     return {"predict": result.tolist()}
-    
