@@ -1,8 +1,6 @@
-import os
 import joblib
 import numpy as np
 
-from sklearn.svm import SVC
 from azureml.core import Model
 from azureml.monitoring import ModelDataCollector
 from inference_schema.schema_decorators import input_schema, output_schema
@@ -35,8 +33,9 @@ def init():
 def run(data):
     # Use the model object loaded by init().
     result = model.predict(data)
-    inputs_dc.collect(data) #this call is saving our input data into Azure Blob
-    prediction_dc.collect(result) #this call is saving our input data into Azure Blob
+    inputs_dc.collect(data)  # this call is saving our input data into Azure Blob
+    prediction_dc.collect(result)  # this call is saving our input data into Azure Blob
 
     # You can return any JSON-serializable object.
-    return { "predict": result.tolist() }
+    return {"predict": result.tolist()}
+    
