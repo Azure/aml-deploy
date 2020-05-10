@@ -7,10 +7,21 @@ jobs:
       - name: Check Out Repository
         id: checkout_repository
         uses: actions/checkout@master
-      
-      - name: Self test
-        id: selftest
-        uses: azure/aml-deploy@master
+    
+      # connect to existing workspace
+      - name: Create Workspace
+        id: ws_create
+        uses: Azure/aml-workspace@v1
         with:
           azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
-        continue-on-error: true
+          parameters_file: "test/test_workspace.json"
+
+      # Deploy model in Azure Machine Learning to ACI
+      - name: Deploy model
+        id: aml_deploy
+        uses: ./
+        with:
+            azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+            model_name:  mymodel
+            model_version: 1
+            parameters_file: "test/test_deploy.json"
