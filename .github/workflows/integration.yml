@@ -25,3 +25,13 @@ jobs:
             model_name:  mymodel
             model_version: 1
             parameters_file: "test/test_deploy.json"
+
+      # Deploy model in Azure Machine Learning to AKS
+      - name: Deploy model
+        id: aml_deploy
+        uses: ./
+        with:
+            azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+            model_name:  mymodel
+            model_version: 1
+            parameters_file: "test/test_aks_deploy.json"
