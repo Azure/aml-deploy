@@ -1,15 +1,29 @@
 ![Integration Test](https://github.com/Azure/aml-deploy/workflows/Integration%20Test/badge.svg)
 ![Lint](https://github.com/Azure/aml-deploy/workflows/Lint/badge.svg)
 
-# Azure Machine Learning Deploy Action
+# GitHub Action for deploying Machine Learning Models to Azure
+
 
 ## Usage
 
-The Azure Machine Learning Deploy action will deploy your model on Azure Machine Learning and create a real-time endpoint for use in other systems. The action currently supports Azure Container Instance and Azure Kubernetes Service as compute target and also supports the no-code deployment of Azure Machine Learning, if the model has been regiustered accordingly.
+The Deploy Machine Learning Models to Azure action will deploy your model on [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/) using GitHub Actions.
+
+Get started today with a [free Azure account](https://azure.com/free/open-source)!
+
+This repository contains  GitHub Action for deploying Machine Learning Models to Azure Machine Learning and creates a real-time endpoint on the model to integrate models in other systems. The endpoint will be hosted either on an Azure Container Instance or on an Azure Kubernetes Service. 
+
 
 This GitHub Action also allows you to provide a python script that executes tests against the  Webservice endpoint after the model deplyoment has completed successfully. You can enable tests by setting the parameter `test_enabled` to true. In addition to that, you have to provide a python script (default `code/test/test.py`) which includes a function (default ` def main(webservice):`) that describes your tests that you want to execute against the service object. The python script gets the [webservice object](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice(class)?view=azure-ml-py) injected. The action fails, if the test script fails.
 
-This action requires an Azure Machine Learning workspace to be created or attached to via the [aml-workspace](https://github.com/Azure/aml-workspace) action and an AKS cluster if you are planning to deploy your model to such a compute target. AKS clsuters can be managed via the [aml-compute](https://github.com/Azure/aml-compute) action.
+
+## Dependencies on other Github Actions
+* [Checkout](https://github.com/actions/checkout) Checkout your Git repository content into Github Actions agent.
+* [aml-workspace](https://github.com/Azure/aml-workspace) This action requires an Azure Machine Learning workspace to be present. You can either create a new one or re-use an existing one using the action. 
+* [aml-registermodel]()
+* [aml-compute](https://github.com/Azure/aml-compute) If you want to host your endpoint on an AKS cluster, you can  managed the AKS Cluster via the  action.
+
+
+## TODOs
 
 ## Template repositories
 
