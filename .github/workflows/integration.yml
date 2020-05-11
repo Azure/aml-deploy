@@ -28,7 +28,7 @@ jobs:
 
       # Deploy model in Azure Machine Learning to AKS
       - name: Deploy model
-        id: aml_deploy
+        id: aml_deploy_aks
         uses: ./
         with:
             azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
