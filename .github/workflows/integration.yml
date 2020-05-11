@@ -1,5 +1,5 @@
 name: Integration Test
-on: [push]
+on: [push , pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,7 +24,7 @@ jobs:
             azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
             model_name:  mymodel
             model_version: 1
-            parameters_file: "test/test_deploy.json"
+            parameters_file: "test/test_aci_deploy.json"
 
       # Deploy model in Azure Machine Learning to AKS
       - name: Deploy model
