@@ -26,7 +26,7 @@ This GitHub Action also allows you to provide a python script that executes test
 
 ## Create Azure Machine Learning and deploy an machine learning model using GitHub Actions
 
-1. This action is one in a series of actions that can be used to setup an ML Ops process. Examples of these can be found at [aml-template](https://github.com/Azure/aml-template).
+This action is one in a series of actions that can be used to setup an ML Ops process. Examples of these can be found at [aml-template](https://github.com/Azure/aml-template).
 
 ### Example workflow
 
