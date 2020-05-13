@@ -10,23 +10,31 @@ The Deploy Machine Learning Models to Azure action will deploy your model on [Az
 
 Get started today with a [free Azure account](https://azure.com/free/open-source)!
 
-This repository contains  GitHub Action for deploying Machine Learning Models to Azure Machine Learning and creates a real-time endpoint on the model to integrate models in other systems. The endpoint will be hosted either on an Azure Container Instance or on an Azure Kubernetes Service. 
+This repository contains GitHub Action for deploying Machine Learning Models to Azure Machine Learning and creates a real-time endpoint on the model to integrate models in other systems. The endpoint will be hosted either on an Azure Container Instance or on an Azure Kubernetes Service. 
 
 
-This GitHub Action also allows you to provide a python script that executes tests against the  Webservice endpoint after the model deplyoment has completed successfully. You can enable tests by setting the parameter `test_enabled` to true. In addition to that, you have to provide a python script (default `code/test/test.py`) which includes a function (default ` def main(webservice):`) that describes your tests that you want to execute against the service object. The python script gets the [webservice object](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice(class)?view=azure-ml-py) injected. The action fails, if the test script fails.
+This GitHub Action also allows you to provide a python script that executes tests against the Webservice endpoint after the model deployment has completed successfully. You can enable tests by setting the parameter `test_enabled` to true. In addition to that, you have to provide a python script (default `code/test/test.py`) which includes a function (default ` def main(webservice):`) that describes your tests that you want to execute against the service object. The python script gets the [webservice object](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice(class)?view=azure-ml-py) injected. The action fails, if the test script fails.
 
 
-## Dependencies on other Github Actions
-* [Checkout](https://github.com/actions/checkout) Checkout your Git repository content into Github Actions agent.
+## Dependencies on other GitHub Actions
+* [Checkout](https://github.com/actions/checkout) Checkout your Git repository content into GitHub Actions agent.
 * [aml-workspace](https://github.com/Azure/aml-workspace) This action requires an Azure Machine Learning workspace to be present. You can either create a new one or re-use an existing one using the action. 
-* [aml-registermodel](https://github.com/Azure/aml-registermodel) Before deploying the model, you need to register the model with Azure Machine Learning. If not already registered you can use this action and use its output in deploy action. 
-* [aml-compute](https://github.com/Azure/aml-compute) You don't need this if you want to host your endpoint on an ACI instance. But, if you want to host your endpoint on an AKS cluster, you can  managed the AKS Cluster via the action. 
+* [aml-registermodel](https://github.com/Azure/aml-registermodel) Before deploying the model, you need to register the model with Azure Machine Learning. If not already registered, you can use this action and use its output in deploy action. 
+* [aml-compute](https://github.com/Azure/aml-compute) You don't need this if you want to host your endpoint on an ACI instance. But, if you want to host your endpoint on an AKS cluster, you can  manage the AKS Cluster via the action. 
 
 
 
 ## Create Azure Machine Learning and deploy an machine learning model using GitHub Actions
 
-This action is one in a series of actions that can be used to setup an ML Ops process. Examples of these can be found at [aml-template](https://github.com/Azure/aml-template).
+This action is one in a series of actions that can be used to setup an ML Ops process. **We suggest getting started with one of our template repositories**, which will allow you to create an ML Ops process in less than 5 minutes.
+
+1. **Simple template repository: [ml-template-azure](https://github.com/machine-learning-apps/ml-template-azure)**
+
+    Go to this template and follow the getting started guide to setup an ML Ops process within minutes and learn how to use the Azure       Machine Learning GitHub Actions in combination. This template demonstrates a very simple process for training and deploying machine     learning models.
+
+2. **Complex template repository: [aml-template](https://github.com/Azure/aml-template)**
+
+    This template demonstrates how approval processes can be included in the process and how training and deployment workflows can be       splitted. It also shows how workflows (e.g. deployment) can be triggered from pull requests. More enhancements will be added to this     template in the future to make it more enterprise ready.
 
 ### Example workflow
 
