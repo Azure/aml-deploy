@@ -10,7 +10,7 @@ The Deploy Machine Learning Models to Azure action will deploy your model on [Az
 
 Get started today with a [free Azure account](https://azure.com/free/open-source)!
 
-This repository contains GitHub Action for deploying Machine Learning Models to Azure Machine Learning and creates a real-time endpoint on the model to integrate models in other systems. The endpoint will be hosted either on an Azure Container Instance or on an Azure Kubernetes Service. 
+This repository contains GitHub Action for deploying Machine Learning Models to Azure Machine Learning and creates a real-time endpoint on the model to integrate models in other systems. The endpoint can be hosted either on an Azure Container Instance or on an Azure Kubernetes Service. 
 
 
 This GitHub Action also allows you to provide a python script that executes tests against the Webservice endpoint after the model deployment has completed successfully. You can enable tests by setting the parameter `test_enabled` to true. In addition to that, you have to provide a python script (default `code/test/test.py`) which includes a function (default ` def main(webservice):`) that describes your tests that you want to execute against the service object. The python script gets the [webservice object](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice(class)?view=azure-ml-py) injected. The action fails, if the test script fails.
@@ -32,7 +32,7 @@ This action is one in a series of actions that can be used to setup an ML Ops pr
 
     Go to this template and follow the getting started guide to setup an ML Ops process within minutes and learn how to use the Azure       Machine Learning GitHub Actions in combination. This template demonstrates a very simple process for training and deploying machine     learning models.
 
-2. **Complex template repository: [aml-template](https://github.com/Azure/aml-template)**
+2. **Advanced template repository: [aml-template](https://github.com/Azure/aml-template)**
 
     This template demonstrates how approval processes can be included in the process and how training and deployment workflows can be       splitted. It also shows how workflows (e.g. deployment) can be triggered from pull requests. More enhancements will be added to this     template in the future to make it more enterprise ready.
 
@@ -84,7 +84,7 @@ jobs:
 | azure_credentials | x | - | Output of `az ad sp create-for-rbac --name <your-sp-name> --role contributor --scopes /subscriptions/<your-subscriptionId>/resourceGroups/<your-rg> --sdk-auth`. This should be stored in your secrets |
 | model_name | x | - | Name of the model that will be deployed. You will get it as an output of register model action as in above example workflow. |
 | model_version | x | - | Version of the model that will be deployed. You will get it as an output of register model action as in above example workflow. |
-| parameters_file |  | `"deploy.json"` | We expect a JSON file in the `.cloud/.azure` folder in your repository specifying your model deployment details. If you have want to provide these details in a file other than "deploy.json" you need to provide this input in the action. |
+| parameters_file |  | `"deploy.json"` | We expect a JSON file in the `.cloud/.azure` folder in root of your repository specifying your model deployment details. If you have want to provide these details in a file other than "deploy.json" you need to provide this input in the action. |
 
 #### azure_credentials ( Azure Credentials ) 
 
