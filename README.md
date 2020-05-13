@@ -1,21 +1,39 @@
 ![Integration Test](https://github.com/Azure/aml-deploy/workflows/Integration%20Test/badge.svg?branch=master&event=push)
 ![Lint and Test](https://github.com/Azure/aml-deploy/workflows/Lint%20and%20Test/badge.svg?branch=master&event=push)
 
-# Azure Machine Learning Deploy Action
+# GitHub Action for deploying Machine Learning Models to Azure
 
 ## Usage
 
-The Azure Machine Learning Deploy action will deploy your model on Azure Machine Learning and create a real-time endpoint for use in other systems. The action currently supports Azure Container Instance and Azure Kubernetes Service as compute target and also supports the no-code deployment of Azure Machine Learning, if the model has been regiustered accordingly.
+The Deploy Machine Learning Models to Azure action will deploy your model on [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/) using GitHub Actions.
 
-This GitHub Action also allows you to provide a python script that executes tests against the  Webservice endpoint after the model deplyoment has completed successfully. You can enable tests by setting the parameter `test_enabled` to true. In addition to that, you have to provide a python script (default `code/test/test.py`) which includes a function (default ` def main(webservice):`) that describes your tests that you want to execute against the service object. The python script gets the [webservice object](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice(class)?view=azure-ml-py) injected. The action fails, if the test script fails.
+Get started today with a [free Azure account](https://azure.com/free/open-source)!
 
-This action requires an Azure Machine Learning workspace to be created or attached to via the [aml-workspace](https://github.com/Azure/aml-workspace) action and an AKS cluster if you are planning to deploy your model to such a compute target. AKS clsuters can be managed via the [aml-compute](https://github.com/Azure/aml-compute) action.
+This repository contains GitHub Action for deploying Machine Learning Models to Azure Machine Learning and creates a real-time endpoint on the model to integrate models in other systems. The endpoint can be hosted either on an Azure Container Instance or on an Azure Kubernetes Service. 
 
-## Template repositories
 
-This action is one in a series of actions that can be used to setup an ML Ops process. Examples of these can be found at
-1. Simple example: [ml-template-azure](https://github.com/machine-learning-apps/ml-template-azure) and
-2. Comprehensive example: [aml-template](https://github.com/Azure/aml-template).
+This GitHub Action also allows you to provide a python script that executes tests against the Webservice endpoint after the model deployment has completed successfully. You can enable tests by setting the parameter `test_enabled` to true. In addition to that, you have to provide a python script (default `code/test/test.py`) which includes a function (default ` def main(webservice):`) that describes your tests that you want to execute against the service object. The python script gets the [webservice object](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.webservice(class)?view=azure-ml-py) injected. The action fails, if the test script fails.
+
+
+## Dependencies on other GitHub Actions
+* [Checkout](https://github.com/actions/checkout) Checkout your Git repository content into GitHub Actions agent.
+* [aml-workspace](https://github.com/Azure/aml-workspace) This action requires an Azure Machine Learning workspace to be present. You can either create a new one or re-use an existing one using the action. 
+* [aml-registermodel](https://github.com/Azure/aml-registermodel) Before deploying the model, you need to register the model with Azure Machine Learning. If not already registered, you can use this action and use its output in deploy action. 
+* [aml-compute](https://github.com/Azure/aml-compute) You don't need this if you want to host your endpoint on an ACI instance. But, if you want to host your endpoint on an AKS cluster, you can  manage the AKS Cluster via the action. 
+
+
+
+## Create Azure Machine Learning and deploy an machine learning model using GitHub Actions
+
+This action is one in a series of actions that can be used to setup an ML Ops process. **We suggest getting started with one of our template repositories**, which will allow you to create an ML Ops process in less than 5 minutes.
+
+1. **Simple template repository: [ml-template-azure](https://github.com/machine-learning-apps/ml-template-azure)**
+
+    Go to this template and follow the getting started guide to setup an ML Ops process within minutes and learn how to use the Azure       Machine Learning GitHub Actions in combination. This template demonstrates a very simple process for training and deploying machine     learning models.
+
+2. **Advanced template repository: [aml-template](https://github.com/Azure/aml-template)**
+
+    This template demonstrates how approval processes can be included in the process and how training and deployment workflows can be       splitted. It also shows how workflows (e.g. deployment) can be triggered from pull requests. More enhancements will be added to this     template in the future to make it more enterprise ready.
 
 ### Example workflow
 
@@ -63,11 +81,11 @@ jobs:
 | Input | Required | Default | Description |
 | ----- | -------- | ------- | ----------- |
 | azure_credentials | x | - | Output of `az ad sp create-for-rbac --name <your-sp-name> --role contributor --scopes /subscriptions/<your-subscriptionId>/resourceGroups/<your-rg> --sdk-auth`. This should be stored in your secrets |
-| model_name | x | - | Name of the model that will be deployed. |
-| model_version | x | - | Version of the model that will be deployed. |
-| parameters_file |  | `"registermodel.json"` | JSON file in the `.cloud/.azure` folder specifying your Azure Machine Learning model registration details. |
+| model_name | x | - | Name of the model that will be deployed. You will get it as an output of register model action as in above example workflow. |
+| model_version | x | - | Version of the model that will be deployed. You will get it as an output of register model action as in above example workflow. |
+| parameters_file |  | `"deploy.json"` | We expect a JSON file in the `.cloud/.azure` folder in root of your repository specifying your model deployment details. If you have want to provide these details in a file other than "deploy.json" you need to provide this input in the action. |
 
-#### Azure Credentials
+#### azure_credentials ( Azure Credentials ) 
 
 Azure credentials are required to connect to your Azure Machine Learning Workspace. These may have been created for an action you are already using in your repository, if so, you can skip the steps below.
 
@@ -95,7 +113,8 @@ This will generate the following JSON output:
 
 Add this JSON output as [a secret](https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#creating-encrypted-secrets) with the name `AZURE_CREDENTIALS` in your GitHub repository.
 
-#### Parameters File
+
+#### parameters_file (Parameters File)
 
 The action tries to load a JSON file in the `.cloud/.azure` folder in your repository, which specifies details for the model deployment to your Azure Machine Learning Workspace. By default, the action expects a file with the name `deploy.json`. If your JSON file has a different name, you can specify it with this parameter. Note that none of these values are required and in the absence, defaults will be created with a combination of the repo name and branch name.
 
