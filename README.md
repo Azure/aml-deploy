@@ -3,7 +3,6 @@
 
 # GitHub Action for deploying Machine Learning Models to Azure
 
-
 ## Usage
 
 The Deploy Machine Learning Models to Azure action will deploy your model on [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/) using GitHub Actions.
