@@ -116,7 +116,7 @@ Add this JSON output as [a secret](https://help.github.com/en/actions/configurin
 
 #### parameters_file (Parameters File)
 
-The action tries to load a JSON file in the `.cloud/.azure` folder in your repository, which specifies details for the model deployment to your Azure Machine Learning Workspace. By default, the action expects a file with the name `deploy.json`. If your JSON file has a different name, you can specify it with this parameter. Note that none of these values are required and in the absence, defaults will be created with a combination of the repo name and branch name.
+The action tries to load a JSON file in the `.cloud/.azure` folder in your repository, which specifies details for the model deployment to your Azure Machine Learning Workspace. By default, the action expects a file with the name `deploy.json`. If your JSON file has a different name, you can specify it with this parameter. Note that none of these values are required and, in the absence, defaults will be created with a combination of the repo name and branch name.
 
 A sample file can be found in this repository in the folder `.cloud/.azure`. There are separate parameters that are used for the ACI deployment, the AKS deployment and some that are common for both deployment options.
 
