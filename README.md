@@ -19,7 +19,7 @@ This GitHub Action also allows you to provide a python script that executes test
 ## Dependencies on other Github Actions
 * [Checkout](https://github.com/actions/checkout) Checkout your Git repository content into Github Actions agent.
 * [aml-workspace](https://github.com/Azure/aml-workspace) This action requires an Azure Machine Learning workspace to be present. You can either create a new one or re-use an existing one using the action. 
-* [aml-registermodel]() Before deploying the model, you need this action to register the model with Azure Machine Learning and use its output in deploy action. 
+* [aml-registermodel](https://github.com/Azure/aml-registermodel) Before deploying the model, you need to register the model with Azure Machine Learning. If not already registered you can use this action and use its output in deploy action. 
 * [aml-compute](https://github.com/Azure/aml-compute) You don't need this if you want to host your endpoint on an ACI instance. But, if you want to host your endpoint on an AKS cluster, you can  managed the AKS Cluster via the action. 
 
 
