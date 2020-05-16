@@ -1,5 +1,5 @@
   
-FROM marvinbuss/aml-docker:1.4.0
+FROM marvinbuss/aml-docker:1.5.0
 
 LABEL maintainer="azure/gh_aml"
 
