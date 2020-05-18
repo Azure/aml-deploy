@@ -10,6 +10,7 @@ jobs:
     steps:
       - uses: Actions-R-Us/actions-tagger@latest
         with:
-          publish_latest: true
+          publish_latest_tag: true
+          prefer_branch_releases: true
         env:
           GITHUB_TOKEN: '${{secrets.GITHUB_TOKEN}}'
