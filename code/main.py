@@ -343,7 +343,7 @@ def main():
         except WebserviceException as exception:
             print(f"::error::Image creation failed with exception: {exception}")
             package_logs = package.get_logs()
-            raise AMLDeploymentException(f"Image creation failed with logs: {service_logs}")
+            raise AMLDeploymentException(f"Image creation failed with logs: {package_logs}")
     print("::debug::Successfully finished Azure Machine Learning Deploy Action")
 
 
