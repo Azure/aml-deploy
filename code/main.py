@@ -3,6 +3,7 @@ import sys
 import json
 import importlib
 
+from azureml.contrib.functions import package_http, package_blob, package_service_bus_queue
 from azureml.core import Workspace, Model, ContainerRegistry
 from azureml.core.compute import ComputeTarget, AksCompute
 from azureml.core.model import InferenceConfig
@@ -315,15 +316,42 @@ def main():
             print(f"::set-output name=service_swagger_uri::{service.swagger_uri}")
 
     # Pulling Docker image
-    if parameters.get("create_image", False):
+    if parameters.get("create_image", None) is not None:
         try:
             # Packaging model
-            package = Model.package(
-                workspace=ws,
-                models=[model],
-                inference_config=inference_config,
-                generate_dockerfile=False
-            )
+            if parameters.get("create_image", None) == "docker":
+                package = Model.package(
+                    workspace=ws,
+                    models=[model],
+                    inference_config=inference_config,
+                    generate_dockerfile=False
+                )
+            if parameters.get("create_image", None) == "function_blob":
+                package = package_blob(
+                    workspace=ws,
+                    models=[model],
+                    inference_config=inference_config,
+                    generate_dockerfile=False,
+                    input_path=os.environ.get("FUNCTION_BLOB_INPUT"),
+                    output_path=os.environ.get("FUNCTION_BLOB_OUTPUT")
+                )
+            if parameters.get("create_image", None) == "function_http":
+                package = package_http(
+                    workspace=ws,
+                    models=[model],
+                    inference_config=inference_config,
+                    generate_dockerfile=False,
+                    auth_level=os.environ.get("FUNCTION_HTTP_AUTH_LEVEL")
+                )
+            if parameters.get("create_image", None) == "function_service_bus_queue":
+                package = package_service_bus_queue(
+                    workspace=ws,
+                    models=[model],
+                    inference_config=inference_config,
+                    generate_dockerfile=False,
+                    input_queue_name=os.environ.get("FUNCTION_SERVICE_BUS_QUEUE_INPUT"),
+                    output_queue_name=os.environ.get("FUNCTION_SERVICE_BUS_QUEUE_OUTPUT")
+                )
 
             # Getting container registry details
             acr = package.get_container_registry()

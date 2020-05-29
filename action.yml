@@ -21,13 +21,13 @@ outputs:
   service_swagger_uri:
     description: "Swagger URI of the webservice that was created (only provided if delete_service_after_deployment is set to False)"
   acr_address:
-    description: "The DNS name or IP address (e.g. myacr.azurecr.io) of the Azure Container Registry (ACR) (only provided if create_image is set to True)"
+    description: "The DNS name or IP address (e.g. myacr.azurecr.io) of the Azure Container Registry (ACR) (only provided if create_image is not None)"
   acr_username:
-    description: "The username for ACR (only provided if create_image is set to True)"
+    description: "The username for ACR (only provided if create_image is not None)"
   acr_password:
-    description: "The password for ACR (only provided if create_image is set to True)"
+    description: "The password for ACR (only provided if create_image is not None)"
   package_location:
-    description: "Full URI of the docker image (e.g. myacr.azurecr.io/azureml/azureml_*) (only provided if create_image is set to True)"
+    description: "Full URI of the docker image (e.g. myacr.azurecr.io/azureml/azureml_*) (only provided if create_image is not None)"
 branding:
   icon: "chevron-up"
   color: "blue"
