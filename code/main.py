@@ -12,7 +12,7 @@ from azureml.core.authentication import ServicePrincipalAuthentication
 from adal.adal_error import AdalError
 from msrest.exceptions import AuthenticationError
 from json import JSONDecodeError
-from utils import AMLConfigurationException, AMLDeploymentException, get_resource_config, mask_parameter, validate_json
+from utils import AMLConfigurationException, AMLDeploymentException, get_resource_config, mask_parameter, validate_json, get_dataset
 from schemas import azure_credentials_schema, parameters_schema
 
 
@@ -176,6 +176,25 @@ def main():
         resource_config=model_resource_config,
         config_name="gpu"
     )
+
+    if parameters.get("profiling_enabled",False):
+        profile_datasets = []
+        for dataset_name in parameters.get("profile_datasets", []):
+            dataset = get_dataset(
+                workspace=ws,
+                name=dataset_name
+            )
+            if dataset is not None:
+                profile_datasets.append((f"{dataset_name}", dataset))
+            # profile the model
+        
+        default_profileName = model_name + "_profile"
+        profileName = parameters.get("profileName", default_profileName)
+        profile = Model.profile(ws, profileName, [model], inference_config, input_dataset=profile_datasets)
+        if parameters.get("wait_for_profiling_completion", False):
+            profile.wait_for_profiling(True)
+            profiling_details = profile.get_details()
+            print(profiling_details)
 
     # Creating deployment config
     print("::debug::Creating deployment config")
