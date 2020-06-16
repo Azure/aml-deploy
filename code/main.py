@@ -177,7 +177,8 @@ def main():
         config_name="gpu"
     )
 
-    if parameters.get("profiling_enabled",False):
+    # Profile Model
+    if parameters.get("profiling_enabled", False):
         profile_datasets = []
         for dataset_name in parameters.get("profile_datasets", []):
             dataset = get_dataset(
@@ -186,14 +187,13 @@ def main():
             )
             if dataset is not None:
                 profile_datasets.append((f"{dataset_name}", dataset))
-            # profile the model
         
-        default_profileName = model_name + "_profile"
-        profileName = parameters.get("profileName", default_profileName)
-        profile = Model.profile(ws, profileName, [model], inference_config, input_dataset=profile_datasets)
+        default_profileName=model_name + "_profile"
+        profileName=parameters.get("profileName", default_profileName)
+        profile=Model.profile(ws, profileName, [model], inference_config, input_dataset=profile_datasets)
         if parameters.get("wait_for_profiling_completion", False):
             profile.wait_for_profiling(True)
-            profiling_details = profile.get_details()
+            profiling_details=profile.get_details()
             print(profiling_details)
 
     # Creating deployment config
