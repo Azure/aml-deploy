@@ -158,8 +158,14 @@ def main():
         print(f"::debug::Failed to create InferenceConfig. Trying to create no code deployment: {exception}")
         inference_config = None
 
-    # Loading run config
-    print("::debug::Loading run config")
+    # Default service name
+    repository_name = os.environ.get("GITHUB_REPOSITORY").split("/")[-1]
+    branch_name = os.environ.get("GITHUB_REF").split("/")[-1]
+    default_service_name = f"{repository_name}-{branch_name}".lower().replace("_", "-")
+    service_name = parameters.get("name", default_service_name)[:32]
+
+    # Loading resource configuration
+    print("::debug::Loading resource configuration")
     model_resource_config = model.resource_configuration
     cpu_cores = get_resource_config(
         config=parameters.get("cpu_cores", None),
@@ -177,23 +183,37 @@ def main():
         config_name="gpu"
     )
 
-    # Profile Model
+    # Profiling model
+    print("::debug::Profiling model")
     if parameters.get("profiling_enabled", False):
-        profile_datasets = []
-        for dataset_name in parameters.get("profile_datasets", []):
-            dataset = get_dataset(
+        # Getting profiling dataset
+        profiling_dataset = get_dataset(
+            workspace=ws,
+            name=parameters.get("profiling_dataset", None)
+        )
+        if profiling_dataset is None:
+            profiling_dataset = model.sample_input_dataset
+
+        # Profiling model
+        try:
+            model_profile = Model.profile(
                 workspace=ws,
-                name=dataset_name
+                profile_name=f"{service_name}-profile"[:32],
+                models=[model],
+                inference_config=inference_config,
+                input_dataset=profiling_dataset
             )
-            if dataset is not None:
-                profile_datasets.append((f"{dataset_name}", dataset))
-        default_profileName = model_name + "_profile"
-        profileName = parameters.get("profileName", default_profileName)
-        profile = Model.profile(ws, profileName, [model], inference_config, input_dataset=profile_datasets)
-        if parameters.get("wait_for_profiling_completion", False):
-            profile.wait_for_profiling(True)
-            profiling_details = profile.get_details()
-            print(profiling_details)
+            model_profile.wait_for_completion(show_output=True)
+
+            # Overwriting resource configuration
+            cpu_cores = model_profile.recommended_cpu
+            memory_gb = model_profile.recommended_memory
+
+            # Setting output
+            profiling_details = model_profile.get_details()
+            print(f"::set-output name=profiling_details::{profiling_details}")
+        except Exception as exception:
+            print(f"::warning::Failed to profile model. Skipping profiling and moving on to deployment: {exception}")
 
     # Creating deployment config
     print("::debug::Creating deployment config")
@@ -253,14 +273,9 @@ def main():
     # Deploying model
     print("::debug::Deploying model")
     try:
-        # Default service name
-        repository_name = os.environ.get("GITHUB_REPOSITORY").split("/")[-1]
-        branch_name = os.environ.get("GITHUB_REF").split("/")[-1]
-        default_service_name = f"{repository_name}-{branch_name}".lower().replace("_", "-")[:32]
-
         service = Model.deploy(
             workspace=ws,
-            name=parameters.get("name", default_service_name),
+            name=service_name,
             models=[model],
             inference_config=inference_config,
             deployment_config=deployment_config,

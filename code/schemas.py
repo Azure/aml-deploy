@@ -99,6 +99,14 @@ parameters_schema = {
             "type": "string",
             "description": "A custom Docker image to be used as base image."
         },
+        "profiling_enabled": {
+            "type": "boolean",
+            "description": "Whether or not to profile this model for an optimal combination of cpu and memory."
+        },
+        "profiling_dataset": {
+            "type": "string",
+            "description": "The name of the dataset that should be used for profiling."
+        },
         "cpu_cores": {
             "type": "number",
             "description": "The number of CPU cores to allocate for this Webservice.",

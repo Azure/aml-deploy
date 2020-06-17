@@ -146,6 +146,8 @@ A sample file can be found in this repository in the folder `.cloud/.azure`. The
 | test_enabled            |          | bool | false | Whether to run tests for this model deployment and the created real-time endpoint. |
 | test_file_path          |          | str  | `"code/test/test.py"` | Path to the python script in your repository in which you define your own tests that you want to run against the webservice endpoint. The GitHub Action fails, if your script fails. |
 | test_file_function_name |          | str   | `"main"` | Name of the function in your python script in your repository in which you define your own tests that you want to run against the webservice endpoint. The function gets the webservice object injected and allows you to run tests against the scoring uri. The GitHub Action fails, if your script fails. |
+| profiling_enabled       |          | bool | false | Whether or not to profile this model for an optimal combination of cpu and memory. To use this functionality, you also have to provide a model profile dataset (`profiling_dataset`). If the parameter is not specified, the Action will try to use the sample input dataset that the model was registered with. Please, note that profiling is a long running operation and can take up to 25 minutes depending on the size of the dataset. More details can be found [here](https://github.com/Azure/MachineLearningNotebooks/blob/master/how-to-use-azureml/deployment/production-deploy-to-aks/production-deploy-to-aks.ipynb). |
+| profiling_dataset       |          | str   | null | Name of the dataset that should be used for model profiling. |
 
 Please visit [this website](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.model.inferenceconfig?view=azure-ml-py) and [this website](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.model(class)?view=azure-ml-py#deploy-workspace--name--models--inference-config-none--deployment-config-none--deployment-target-none--overwrite-false-) for more details.
 
@@ -196,6 +198,7 @@ Please visit [this website](https://docs.microsoft.com/en-us/python/api/azureml-
 | ------------------- | ------------------------------- |
 | service_scoring_uri | Scoring URI of the webservice that was created (only provided if delete_service_after_test is set to False). |
 | service_swagger_uri | Swagger Uri of the webservice that was created (only provided if delete_service_after_test is set to False). |
+| profiling_details   | Dictionary of details of the model profiling result. This will only be provided, if the model profiling method is used and successfully executed. |
 
 ### Environment variables
 

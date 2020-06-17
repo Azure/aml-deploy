@@ -20,6 +20,8 @@ outputs:
     description: "Scoring URI of the webservice that was created (only provided if delete_service_after_test is set to False)"
   service_swagger_uri:
     description: "Swagger Uri of the webservice that was created (only provided if delete_service_after_test is set to False)"
+  profiling_details:
+    description: "Dictionary of details of the model profiling result. This will only be provided, if the model profiling method is used and successfully executed."
 branding:
   icon: "chevron-up"
   color: "blue"
