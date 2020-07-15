@@ -121,6 +121,15 @@ parameters_schema = {
             "type": "boolean",
             "description": "Indicates whether the service gets deleted after the deployment completed successfully."
         },
+        "skip_deployment": {
+            "type": "boolean",
+            "description": "Indicates whether the deployment to ACI or AKS should be skipped. This can be used in combination with `create_image` to only create a Docker image that can be used for further deployment."
+        },
+        "create_image": {
+            "type": "string",
+            "description": "Indicates whether a Docker image should be created which can be used for further deployment.",
+            "pattern": "docker|function_blob|function_http|function_service_bus_queue"
+        },
         "tags": {
             "type": "object",
             "description": "Dictionary of key value tags to give this Webservice."

@@ -17,9 +17,17 @@ inputs:
     default: "deploy.json"
 outputs:
   service_scoring_uri:
-    description: "Scoring URI of the webservice that was created (only provided if delete_service_after_test is set to False)"
+    description: "Scoring URI of the webservice that was created (only provided if delete_service_after_deployment is set to False)"
   service_swagger_uri:
-    description: "Swagger Uri of the webservice that was created (only provided if delete_service_after_test is set to False)"
+    description: "Swagger URI of the webservice that was created (only provided if delete_service_after_deployment is set to False)"
+  acr_address:
+    description: "The DNS name or IP address (e.g. myacr.azurecr.io) of the Azure Container Registry (ACR) (only provided if create_image is not None)"
+  acr_username:
+    description: "The username for ACR (only provided if create_image is not None)"
+  acr_password:
+    description: "The password for ACR (only provided if create_image is not None)"
+  package_location:
+    description: "Full URI of the docker image (e.g. myacr.azurecr.io/azureml/azureml_*) (only provided if create_image is not None)"
   profiling_details:
     description: "Dictionary of details of the model profiling result. This will only be provided, if the model profiling method is used and successfully executed."
 branding:
