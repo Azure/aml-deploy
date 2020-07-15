@@ -3,6 +3,7 @@ import sys
 import json
 import importlib
 
+from azureml.contrib.functions import package_http, package_blob, package_service_bus_queue
 from azureml.core import Workspace, Model, ContainerRegistry
 from azureml.core.compute import ComputeTarget, AksCompute
 from azureml.core.model import InferenceConfig
@@ -113,18 +114,6 @@ def main():
         print(f"::error::Workspace authorizationfailed: {exception}")
         raise ProjectSystemException
 
-    # Loading deployment target
-    print("::debug::Loading deployment target")
-    try:
-        deployment_target = ComputeTarget(
-            workspace=ws,
-            name=parameters.get("deployment_compute_target", "")
-        )
-    except ComputeTargetException:
-        deployment_target = None
-    except TypeError:
-        deployment_target = None
-
     # Loading model
     print("::debug::Loading model")
     try:
@@ -156,7 +145,7 @@ def main():
             source_directory=parameters.get("inference_source_directory", "code/deploy/"),
             enable_gpu=parameters.get("enable_gpu", None),
             description=parameters.get("description", None),
-            base_image=parameters.get("base_image", None),
+            base_image=parameters.get("custom_base_image", None),
             base_image_registry=container_registry,
             cuda_version=parameters.get("cuda_version", None)
         )
@@ -167,159 +156,231 @@ def main():
         print(f"::debug::Failed to create InferenceConfig. Trying to create no code deployment: {exception}")
         inference_config = None
 
-    # Loading run config
-    print("::debug::Loading run config")
-    model_resource_config = model.resource_configuration
-    cpu_cores = get_resource_config(
-        config=parameters.get("cpu_cores", None),
-        resource_config=model_resource_config,
-        config_name="cpu"
-    )
-    memory_gb = get_resource_config(
-        config=parameters.get("memory_gb", None),
-        resource_config=model_resource_config,
-        config_name="memory_in_gb"
-    )
-    gpu_cores = get_resource_config(
-        config=parameters.get("gpu_cores", None),
-        resource_config=model_resource_config,
-        config_name="gpu"
-    )
-
-    # Creating deployment config
-    print("::debug::Creating deployment config")
-    if type(deployment_target) is AksCompute:
-        deployment_config = AksWebservice.deploy_configuration(
-            autoscale_enabled=parameters.get("autoscale_enabled", None),
-            autoscale_min_replicas=parameters.get("autoscale_min_replicas", None),
-            autoscale_max_replicas=parameters.get("autoscale_max_replicas", None),
-            autoscale_refresh_seconds=parameters.get("autoscale_refresh_seconds", None),
-            autoscale_target_utilization=parameters.get("autoscale_target_utilization", None),
-            collect_model_data=parameters.get("model_data_collection_enabled", None),
-            auth_enabled=parameters.get("authentication_enabled", None),
-            cpu_cores=cpu_cores,
-            memory_gb=memory_gb,
-            enable_app_insights=parameters.get("app_insights_enabled", None),
-            scoring_timeout_ms=parameters.get("scoring_timeout_ms", None),
-            replica_max_concurrent_requests=parameters.get("replica_max_concurrent_requests", None),
-            max_request_wait_time=parameters.get("max_request_wait_time", None),
-            num_replicas=parameters.get("num_replicas", None),
-            primary_key=os.environ.get("PRIMARY_KEY", None),
-            secondary_key=os.environ.get("SECONDARY_KEY", None),
-            tags=parameters.get("tags", None),
-            properties=parameters.get("properties", None),
-            description=parameters.get("description", None),
-            gpu_cores=gpu_cores,
-            period_seconds=parameters.get("period_seconds", None),
-            initial_delay_seconds=parameters.get("initial_delay_seconds", None),
-            timeout_seconds=parameters.get("timeout_seconds", None),
-            success_threshold=parameters.get("success_threshold", None),
-            failure_threshold=parameters.get("failure_threshold", None),
-            namespace=parameters.get("namespace", None),
-            token_auth_enabled=parameters.get("token_auth_enabled", None)
+    # Skip deployment if only Docker image should be created
+    if not parameters.get("skip_deployment", False):
+        # Loading run config
+        print("::debug::Loading run config")
+        model_resource_config = model.resource_configuration
+        cpu_cores = get_resource_config(
+            config=parameters.get("cpu_cores", None),
+            resource_config=model_resource_config,
+            config_name="cpu"
         )
-    else:
-        deployment_config = AciWebservice.deploy_configuration(
-            cpu_cores=cpu_cores,
-            memory_gb=memory_gb,
-            tags=parameters.get("tags", None),
-            properties=parameters.get("properties", None),
-            description=parameters.get("description", None),
-            location=parameters.get("location", None),
-            auth_enabled=parameters.get("authentication_enabled", None),
-            ssl_enabled=parameters.get("ssl_enabled", None),
-            enable_app_insights=parameters.get("app_insights_enabled", None),
-            ssl_cert_pem_file=parameters.get("ssl_cert_pem_file", None),
-            ssl_key_pem_file=parameters.get("ssl_key_pem_file", None),
-            ssl_cname=parameters.get("ssl_cname", None),
-            dns_name_label=parameters.get("dns_name_label", None),
-            primary_key=os.environ.get("PRIMARY_KEY", None),
-            secondary_key=os.environ.get("SECONDARY_KEY", None),
-            collect_model_data=parameters.get("model_data_collection_enabled", None),
-            cmk_vault_base_url=os.environ.get("CMK_VAULT_BASE_URL", None),
-            cmk_key_name=os.environ.get("CMK_KEY_NAME", None),
-            cmk_key_version=os.environ.get("CMK_KEY_VERSION", None)
+        memory_gb = get_resource_config(
+            config=parameters.get("memory_gb", None),
+            resource_config=model_resource_config,
+            config_name="memory_in_gb"
+        )
+        gpu_cores = get_resource_config(
+            config=parameters.get("gpu_cores", None),
+            resource_config=model_resource_config,
+            config_name="gpu"
         )
 
-    # Deploying model
-    print("::debug::Deploying model")
-    try:
-        # Default service name
-        repository_name = os.environ.get("GITHUB_REPOSITORY").split("/")[-1]
-        branch_name = os.environ.get("GITHUB_REF").split("/")[-1]
-        default_service_name = f"{repository_name}-{branch_name}".lower().replace("_", "-")[:32]
-
-        service = Model.deploy(
-            workspace=ws,
-            name=parameters.get("name", default_service_name),
-            models=[model],
-            inference_config=inference_config,
-            deployment_config=deployment_config,
-            deployment_target=deployment_target,
-            overwrite=True
-        )
-        service.wait_for_deployment(show_output=True)
-    except WebserviceException as exception:
-        print(f"::error::Model deployment failed with exception: {exception}")
-        service_logs = service.get_logs()
-        raise AMLDeploymentException(f"Model deployment failedlogs: {service_logs} \nexception: {exception}")
-
-    # Checking status of service
-    print("::debug::Checking status of service")
-    if service.state != "Healthy":
-        service_logs = service.get_logs()
-        print(f"::error::Model deployment failed with state '{service.state}': {service_logs}")
-        raise AMLDeploymentException(f"Model deployment failed with state '{service.state}': {service_logs}")
-
-    if parameters.get("test_enabled", False):
-        # Testing service
-        print("::debug::Testing service")
-        root = os.environ.get("GITHUB_WORKSPACE", default=None)
-        test_file_path = parameters.get("test_file_path", "code/test/test.py")
-        test_file_function_name = parameters.get("test_file_function_name", "main")
-
-        print("::debug::Adding root to system path")
-        sys.path.insert(1, f"{root}")
-
-        print("::debug::Importing module")
-        test_file_path = f"{test_file_path}.py" if not test_file_path.endswith(".py") else test_file_path
+        # Loading deployment target
+        print("::debug::Loading deployment target")
         try:
-            test_spec = importlib.util.spec_from_file_location(
-                name="testmodule",
-                location=test_file_path
+            deployment_target = ComputeTarget(
+                workspace=ws,
+                name=parameters.get("deployment_compute_target", "")
             )
-            test_module = importlib.util.module_from_spec(spec=test_spec)
-            test_spec.loader.exec_module(test_module)
-            test_function = getattr(test_module, test_file_function_name, None)
-        except ModuleNotFoundError as exception:
-            print(f"::error::Could not load python script in your repository which defines theweb service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
-            raise AMLConfigurationException(f"Could not load python script in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
-        except FileNotFoundError as exception:
-            print(f"::error::Could not load python script or function in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
-            raise AMLConfigurationException(f"Could not load python script or function in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
-        except AttributeError as exception:
-            print(f"::error::Could not load python script or function in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
-            raise AMLConfigurationException(f"Could not load python script or function in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+        except ComputeTargetException:
+            deployment_target = None
+        except TypeError:
+            deployment_target = None
 
-        # Load experiment config
-        print("::debug::Loading experiment config")
+        # Creating deployment config
+        print("::debug::Creating deployment config")
+        if type(deployment_target) is AksCompute:
+            deployment_config = AksWebservice.deploy_configuration(
+                autoscale_enabled=parameters.get("autoscale_enabled", None),
+                autoscale_min_replicas=parameters.get("autoscale_min_replicas", None),
+                autoscale_max_replicas=parameters.get("autoscale_max_replicas", None),
+                autoscale_refresh_seconds=parameters.get("autoscale_refresh_seconds", None),
+                autoscale_target_utilization=parameters.get("autoscale_target_utilization", None),
+                collect_model_data=parameters.get("model_data_collection_enabled", None),
+                auth_enabled=parameters.get("authentication_enabled", None),
+                cpu_cores=cpu_cores,
+                memory_gb=memory_gb,
+                enable_app_insights=parameters.get("app_insights_enabled", None),
+                scoring_timeout_ms=parameters.get("scoring_timeout_ms", None),
+                replica_max_concurrent_requests=parameters.get("replica_max_concurrent_requests", None),
+                max_request_wait_time=parameters.get("max_request_wait_time", None),
+                num_replicas=parameters.get("num_replicas", None),
+                primary_key=os.environ.get("PRIMARY_KEY", None),
+                secondary_key=os.environ.get("SECONDARY_KEY", None),
+                tags=parameters.get("tags", None),
+                properties=parameters.get("properties", None),
+                description=parameters.get("description", None),
+                gpu_cores=gpu_cores,
+                period_seconds=parameters.get("period_seconds", None),
+                initial_delay_seconds=parameters.get("initial_delay_seconds", None),
+                timeout_seconds=parameters.get("timeout_seconds", None),
+                success_threshold=parameters.get("success_threshold", None),
+                failure_threshold=parameters.get("failure_threshold", None),
+                namespace=parameters.get("namespace", None),
+                token_auth_enabled=parameters.get("token_auth_enabled", None)
+            )
+        else:
+            deployment_config = AciWebservice.deploy_configuration(
+                cpu_cores=cpu_cores,
+                memory_gb=memory_gb,
+                tags=parameters.get("tags", None),
+                properties=parameters.get("properties", None),
+                description=parameters.get("description", None),
+                location=parameters.get("location", None),
+                auth_enabled=parameters.get("authentication_enabled", None),
+                ssl_enabled=parameters.get("ssl_enabled", None),
+                enable_app_insights=parameters.get("app_insights_enabled", None),
+                ssl_cert_pem_file=parameters.get("ssl_cert_pem_file", None),
+                ssl_key_pem_file=parameters.get("ssl_key_pem_file", None),
+                ssl_cname=parameters.get("ssl_cname", None),
+                dns_name_label=parameters.get("dns_name_label", None),
+                primary_key=os.environ.get("PRIMARY_KEY", None),
+                secondary_key=os.environ.get("SECONDARY_KEY", None),
+                collect_model_data=parameters.get("model_data_collection_enabled", None),
+                cmk_vault_base_url=os.environ.get("CMK_VAULT_BASE_URL", None),
+                cmk_key_name=os.environ.get("CMK_KEY_NAME", None),
+                cmk_key_version=os.environ.get("CMK_KEY_VERSION", None)
+            )
+
+        # Deploying model
+        print("::debug::Deploying model")
         try:
-            test_function(service)
-        except TypeError as exception:
-            print(f"::error::Could not load experiment config from your module (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
-            raise AMLConfigurationException(f"Could not load experiment config from your module (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
-        except Exception as exception:
-            print(f"::error::The webservice tests did not complete successfully: {exception}")
-            raise AMLDeploymentException(f"The webservice tests did not complete successfully: {exception}")
+            # Default service name
+            repository_name = os.environ.get("GITHUB_REPOSITORY").split("/")[-1]
+            branch_name = os.environ.get("GITHUB_REF").split("/")[-1]
+            default_service_name = f"{repository_name}-{branch_name}".lower().replace("_", "-")[:32]
 
-    # Deleting service if desired
-    if parameters.get("delete_service_after_deployment", False):
-        service.delete()
-    else:
-        # Create outputs
-        print("::debug::Creating outputs")
-        print(f"::set-output name=service_scoring_uri::{service.scoring_uri}")
-        print(f"::set-output name=service_swagger_uri::{service.swagger_uri}")
+            service = Model.deploy(
+                workspace=ws,
+                name=parameters.get("name", default_service_name),
+                models=[model],
+                inference_config=inference_config,
+                deployment_config=deployment_config,
+                deployment_target=deployment_target,
+                overwrite=True
+            )
+            service.wait_for_deployment(show_output=True)
+        except WebserviceException as exception:
+            print(f"::error::Model deployment failed with exception: {exception}")
+            service_logs = service.get_logs()
+            raise AMLDeploymentException(f"Model deployment failed logs: {service_logs} \nexception: {exception}")
+
+        # Checking status of service
+        print("::debug::Checking status of service")
+        if service.state != "Healthy":
+            service_logs = service.get_logs()
+            print(f"::error::Model deployment failed with state '{service.state}': {service_logs}")
+            raise AMLDeploymentException(f"Model deployment failed with state '{service.state}': {service_logs}")
+
+        if parameters.get("test_enabled", False):
+            # Testing service
+            print("::debug::Testing service")
+            root = os.environ.get("GITHUB_WORKSPACE", default=None)
+            test_file_path = parameters.get("test_file_path", "code/test/test.py")
+            test_file_function_name = parameters.get("test_file_function_name", "main")
+
+            print("::debug::Adding root to system path")
+            sys.path.insert(1, f"{root}")
+
+            print("::debug::Importing module")
+            test_file_path = f"{test_file_path}.py" if not test_file_path.endswith(".py") else test_file_path
+            try:
+                test_spec = importlib.util.spec_from_file_location(
+                    name="testmodule",
+                    location=test_file_path
+                )
+                test_module = importlib.util.module_from_spec(spec=test_spec)
+                test_spec.loader.exec_module(test_module)
+                test_function = getattr(test_module, test_file_function_name, None)
+            except ModuleNotFoundError as exception:
+                print(f"::error::Could not load python script in your repository which defines theweb service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+                raise AMLConfigurationException(f"Could not load python script in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+            except FileNotFoundError as exception:
+                print(f"::error::Could not load python script or function in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+                raise AMLConfigurationException(f"Could not load python script or function in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+            except AttributeError as exception:
+                print(f"::error::Could not load python script or function in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+                raise AMLConfigurationException(f"Could not load python script or function in your repository which defines the web service tests (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+
+            # Load experiment config
+            print("::debug::Loading experiment config")
+            try:
+                test_function(service)
+            except TypeError as exception:
+                print(f"::error::Could not load experiment config from your module (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+                raise AMLConfigurationException(f"Could not load experiment config from your module (Script: /{test_file_path}, Function: {test_file_function_name}()): {exception}")
+            except Exception as exception:
+                print(f"::error::The webservice tests did not complete successfully: {exception}")
+                raise AMLDeploymentException(f"The webservice tests did not complete successfully: {exception}")
+
+        # Deleting service if desired
+        if parameters.get("delete_service_after_deployment", False):
+            service.delete()
+        else:
+            # Creating outputs
+            print("::debug::Creating outputs")
+            print(f"::set-output name=service_scoring_uri::{service.scoring_uri}")
+            print(f"::set-output name=service_swagger_uri::{service.swagger_uri}")
+
+    # Pulling Docker image
+    if parameters.get("create_image", None) is not None:
+        try:
+            # Packaging model
+            if parameters.get("create_image", None) == "docker":
+                package = Model.package(
+                    workspace=ws,
+                    models=[model],
+                    inference_config=inference_config,
+                    generate_dockerfile=False
+                )
+            if parameters.get("create_image", None) == "function_blob":
+                package = package_blob(
+                    workspace=ws,
+                    models=[model],
+                    inference_config=inference_config,
+                    generate_dockerfile=False,
+                    input_path=os.environ.get("FUNCTION_BLOB_INPUT"),
+                    output_path=os.environ.get("FUNCTION_BLOB_OUTPUT")
+                )
+            if parameters.get("create_image", None) == "function_http":
+                package = package_http(
+                    workspace=ws,
+                    models=[model],
+                    inference_config=inference_config,
+                    generate_dockerfile=False,
+                    auth_level=os.environ.get("FUNCTION_HTTP_AUTH_LEVEL")
+                )
+            if parameters.get("create_image", None) == "function_service_bus_queue":
+                package = package_service_bus_queue(
+                    workspace=ws,
+                    models=[model],
+                    inference_config=inference_config,
+                    generate_dockerfile=False,
+                    input_queue_name=os.environ.get("FUNCTION_SERVICE_BUS_QUEUE_INPUT"),
+                    output_queue_name=os.environ.get("FUNCTION_SERVICE_BUS_QUEUE_OUTPUT")
+                )
+
+            # Getting container registry details
+            acr = package.get_container_registry()
+            mask_parameter(parameter=acr.address)
+            mask_parameter(parameter=acr.username)
+            mask_parameter(parameter=acr.password)
+
+            # Wait for completion and pull image
+            package.wait_for_creation(show_output=True)
+
+            # Creating additional outputs
+            print("::debug::Creating outputs")
+            print(f"::set-output name=acr_address::{acr.address}")
+            print(f"::set-output name=acr_username::{acr.username}")
+            print(f"::set-output name=acr_password::{acr.password}")
+            print(f"::set-output name=package_location::{package.location}")
+        except WebserviceException as exception:
+            print(f"::error::Image creation failed with exception: {exception}")
+            package_logs = package.get_logs()
+            raise AMLDeploymentException(f"Image creation failed with logs: {package_logs}")
     print("::debug::Successfully finished Azure Machine Learning Deploy Action")
 
 

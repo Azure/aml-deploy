@@ -146,6 +146,8 @@ A sample file can be found in this repository in the folder `.cloud/.azure`. The
 | test_enabled            |          | bool | false | Whether to run tests for this model deployment and the created real-time endpoint. |
 | test_file_path          |          | str  | `"code/test/test.py"` | Path to the python script in your repository in which you define your own tests that you want to run against the webservice endpoint. The GitHub Action fails, if your script fails. |
 | test_file_function_name |          | str   | `"main"` | Name of the function in your python script in your repository in which you define your own tests that you want to run against the webservice endpoint. The function gets the webservice object injected and allows you to run tests against the scoring uri. The GitHub Action fails, if your script fails. |
+| skip_deployment         |          | bool | false | Indicates whether the deployment to ACI or AKS should be skipped. This can be used in combination with `create_image` to only create a Docker image that can be used for further deployment. |
+| create_image            |          | str: `"docker"`, `"function_blob"`, `"function_http"` or `"function_service_bus_queue"`  | null | Indicates whether a Docker image should be created which can be used for further deployment. |
 
 Please visit [this website](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.model.inferenceconfig?view=azure-ml-py) and [this website](https://docs.microsoft.com/en-us/python/api/azureml-core/azureml.core.model(class)?view=azure-ml-py#deploy-workspace--name--models--inference-config-none--deployment-config-none--deployment-target-none--overwrite-false-) for more details.
 
@@ -194,8 +196,12 @@ Please visit [this website](https://docs.microsoft.com/en-us/python/api/azureml-
 
 | Output              | Description                     |
 | ------------------- | ------------------------------- |
-| service_scoring_uri | Scoring URI of the webservice that was created (only provided if delete_service_after_test is set to False). |
-| service_swagger_uri | Swagger Uri of the webservice that was created (only provided if delete_service_after_test is set to False). |
+| service_scoring_uri | Scoring URI of the webservice that was created (only provided if `delete_service_after_deployment` is set to False). |
+| service_swagger_uri | Swagger Uri of the webservice that was created (only provided if `delete_service_after_deployment` is set to False). |
+| acr_address         | The DNS name or IP address (e.g. myacr.azurecr.io) of the Azure Container Registry (ACR) (only provided if `create_image` is not None).  |
+| acr_username        | The username for ACR (only provided if `create_image` is not None). |
+| acr_password        | The password for ACR (only provided if `create_image` is not None). |
+| package_location    | Full URI of the docker image (e.g. myacr.azurecr.io/azureml/azureml_*) (only provided if `create_image` is not None). |
 
 ### Environment variables
 
