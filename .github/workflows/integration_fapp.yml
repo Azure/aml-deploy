@@ -1,0 +1,48 @@
+
+name: Integration Test
+on: [push , pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Repository
+        id: checkout_repository
+        uses: actions/checkout@master
+      
+      # Connect to existing workspace
+      - name: Create Workspace
+        id: ws_create
+        uses: Azure/aml-workspace@v1
+        with:
+          azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+          parameters_file: "test/test_workspace.json"
+
+      # Deploy model in Azure Machine Learning to ACI
+      - name: Deploy model
+        id: aml_deploy
+        uses: ./
+        with:
+            azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
+            model_name:  mymodel
+            model_version: 1
+            parameters_file: "test/test_aci_deploy.json"
+      
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 'Run Azure Functions Container Action'
+        uses: Azure/functions-container-action@v1
+        id: fa
+        with:
+          app-name: amldeployfapp
+          image: ${{ steps.aml_deploy.outputs.package_location }}
+      
+      - name: 'use the published functionapp url in upcoming steps'
+        run: |
+          echo "${{ steps.fa.outputs.app-url }}"
+
+      - name: Delete function app after deployment.
+        run: |
+          az functionapp delete --name amldeployfapp --resource-group gha_and_aml_rg   
