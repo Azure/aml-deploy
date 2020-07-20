@@ -1,5 +1,5 @@
 
-name: Integration Test
+name: FApp Integration Test
 on: [push , pull_request]
 jobs:
   build:
