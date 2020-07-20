@@ -25,7 +25,7 @@ jobs:
             azure_credentials: ${{ secrets.AZURE_CREDENTIALS }}
             model_name:  mymodel
             model_version: 1
-            parameters_file: "test/test_aci_deploy.json"
+            parameters_file: "test/test_fapp_deploy.json"
       
       - name: 'Login via Azure CLI'
         uses: azure/login@v1
