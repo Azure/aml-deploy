@@ -13,7 +13,7 @@ from azureml.core.authentication import ServicePrincipalAuthentication
 from adal.adal_error import AdalError
 from msrest.exceptions import AuthenticationError
 from json import JSONDecodeError
-from utils import AMLConfigurationException, AMLDeploymentException, get_resource_config, mask_parameter, validate_json
+from utils import AMLConfigurationException, AMLDeploymentException, get_resource_config, mask_parameter, validate_json, get_dataset
 from schemas import azure_credentials_schema, parameters_schema
 
 
@@ -158,6 +158,12 @@ def main():
 
     # Skip deployment if only Docker image should be created
     if not parameters.get("skip_deployment", False):
+        # Default service name
+        repository_name = os.environ.get("GITHUB_REPOSITORY").split("/")[-1]
+        branch_name = os.environ.get("GITHUB_REF").split("/")[-1]
+        default_service_name = f"{repository_name}-{branch_name}".lower().replace("_", "-")
+        service_name = parameters.get("name", default_service_name)[:32]
+
         # Loading run config
         print("::debug::Loading run config")
         model_resource_config = model.resource_configuration
@@ -176,6 +182,38 @@ def main():
             resource_config=model_resource_config,
             config_name="gpu"
         )
+
+        # Profiling model
+        print("::debug::Profiling model")
+        if parameters.get("profiling_enabled", False):
+            # Getting profiling dataset
+            profiling_dataset = get_dataset(
+                workspace=ws,
+                name=parameters.get("profiling_dataset", None)
+            )
+            if profiling_dataset is None:
+                profiling_dataset = model.sample_input_dataset
+
+            # Profiling model
+            try:
+                model_profile = Model.profile(
+                    workspace=ws,
+                    profile_name=f"{service_name}-profile"[:32],
+                    models=[model],
+                    inference_config=inference_config,
+                    input_dataset=profiling_dataset
+                )
+                model_profile.wait_for_completion(show_output=True)
+
+                # Overwriting resource configuration
+                cpu_cores = model_profile.recommended_cpu
+                memory_gb = model_profile.recommended_memory
+
+                # Setting output
+                profiling_details = model_profile.get_details()
+                print(f"::set-output name=profiling_details::{profiling_details}")
+            except Exception as exception:
+                print(f"::warning::Failed to profile model. Skipping profiling and moving on to deployment: {exception}")
 
         # Loading deployment target
         print("::debug::Loading deployment target")
@@ -247,14 +285,9 @@ def main():
         # Deploying model
         print("::debug::Deploying model")
         try:
-            # Default service name
-            repository_name = os.environ.get("GITHUB_REPOSITORY").split("/")[-1]
-            branch_name = os.environ.get("GITHUB_REF").split("/")[-1]
-            default_service_name = f"{repository_name}-{branch_name}".lower().replace("_", "-")[:32]
-
             service = Model.deploy(
                 workspace=ws,
-                name=parameters.get("name", default_service_name),
+                name=service_name,
                 models=[model],
                 inference_config=inference_config,
                 deployment_config=deployment_config,
@@ -324,7 +357,7 @@ def main():
             print(f"::set-output name=service_scoring_uri::{service.scoring_uri}")
             print(f"::set-output name=service_swagger_uri::{service.swagger_uri}")
 
-    # Pulling Docker image
+    # Creating Docker image
     if parameters.get("create_image", None) is not None:
         try:
             # Packaging model

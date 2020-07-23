@@ -146,6 +146,8 @@ A sample file can be found in this repository in the folder `.cloud/.azure`. The
 | test_enabled            |          | bool | false | Whether to run tests for this model deployment and the created real-time endpoint. |
 | test_file_path          |          | str  | `"code/test/test.py"` | Path to the python script in your repository in which you define your own tests that you want to run against the webservice endpoint. The GitHub Action fails, if your script fails. |
 | test_file_function_name |          | str   | `"main"` | Name of the function in your python script in your repository in which you define your own tests that you want to run against the webservice endpoint. The function gets the webservice object injected and allows you to run tests against the scoring uri. The GitHub Action fails, if your script fails. |
+| profiling_enabled       |          | bool | false | Whether or not to profile this model for an optimal combination of cpu and memory. To use this functionality, you also have to provide a model profile dataset (`profiling_dataset`). If the parameter is not specified, the Action will try to use the sample input dataset that the model was registered with. Please, note that profiling is a long running operation and can take up to 25 minutes depending on the size of the dataset. More details can be found [here](https://github.com/Azure/MachineLearningNotebooks/blob/master/how-to-use-azureml/deployment/production-deploy-to-aks/production-deploy-to-aks.ipynb). |
+| profiling_dataset       |          | str   | null | Name of the dataset that should be used for model profiling. |
 | skip_deployment         |          | bool | false | Indicates whether the deployment to ACI or AKS should be skipped. This can be used in combination with `create_image` to only create a Docker image that can be used for further deployment. |
 | create_image            |          | str: `"docker"`, `"function_blob"`, `"function_http"` or `"function_service_bus_queue"`  | null | Indicates whether a Docker image should be created which can be used for further deployment. |
 
@@ -202,6 +204,7 @@ Please visit [this website](https://docs.microsoft.com/en-us/python/api/azureml-
 | acr_username        | The username for ACR (only provided if `create_image` is not None). |
 | acr_password        | The password for ACR (only provided if `create_image` is not None). |
 | package_location    | Full URI of the docker image (e.g. myacr.azurecr.io/azureml/azureml_*) (only provided if `create_image` is not None). |
+| profiling_details   | Dictionary of details of the model profiling result. This will only be provided, if the model profiling method is used and successfully executed. |
 
 ### Environment variables
 

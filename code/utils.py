@@ -1,4 +1,5 @@
 import jsonschema
+from azureml.core import Dataset
 
 
 class AMLConfigurationException(Exception):
@@ -30,3 +31,15 @@ def get_resource_config(config, resource_config, config_name):
 
 def mask_parameter(parameter):
     print(f"::add-mask::{parameter}")
+
+
+def get_dataset(workspace, name):
+    try:
+        dataset = Dataset.get_by_name(
+            workspace=workspace,
+            name=name,
+            version="latest"
+        )
+    except Exception:
+        dataset = None
+    return dataset
