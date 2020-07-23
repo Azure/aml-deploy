@@ -6,7 +6,7 @@ jobs:
     steps:
       - name: Check Out Repository
         id: checkout_repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v2
       
       # Connect to existing workspace
       - name: Create Workspace
