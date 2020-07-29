@@ -28,6 +28,8 @@ outputs:
     description: "The password for ACR (only provided if create_image is not None)"
   package_location:
     description: "Full URI of the docker image (e.g. myacr.azurecr.io/azureml/azureml_*) (only provided if create_image is not None)"
+  profiling_details:
+    description: "Dictionary of details of the model profiling result. This will only be provided, if the model profiling method is used and successfully executed."
 branding:
   icon: "chevron-up"
   color: "blue"
