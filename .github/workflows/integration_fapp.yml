@@ -36,13 +36,9 @@ jobs:
         uses: Azure/functions-container-action@v1
         id: fa
         with:
-          app-name: amldeployfapp
+          app-name: amltest
           image: ${{ steps.aml_deploy.outputs.package_location }}
       
       - name: 'use the published functionapp url in upcoming steps'
         run: |
           echo "${{ steps.fa.outputs.app-url }}"
-
-      - name: Delete function app after deployment.
-        run: |
-          az functionapp delete --name amldeployfapp --resource-group gha_and_aml_rg   
