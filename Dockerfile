@@ -1,4 +1,4 @@
-FROM ghcr.io/marvinbuss/aml-docker:1.27.0
+FROM ghcr.io/marvinbuss/aml-docker:1.28.0
 
 LABEL maintainer="azure/gh_aml"
 
