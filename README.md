@@ -3,6 +3,12 @@
 
 # GitHub Action for deploying Machine Learning Models to Azure
 
+## Deprecation notice
+
+This Action is deprecated. Instead, consider using the [CLI (v2)](https://docs.microsoft.com/azure/machine-learning/how-to-configure-cli) to manage and interact with Azure Machine Learning endpoints and deployments in GitHub Actions.
+
+**Important:** The CLI (v2) is not recommended for production use while in preview.
+
 ## Usage
 
 The Deploy Machine Learning Models to Azure action will deploy your model on [Azure Machine Learning](https://azure.microsoft.com/en-us/services/machine-learning/) using GitHub Actions.
